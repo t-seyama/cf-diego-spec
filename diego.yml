@@ -7,12 +7,13 @@
 #  aws_secret_access_key: ''  # the aws secret key for uploading metrics to s3
 #  bbs:
 #    api_location: bbs.service.cf.internal:8889  # the address of the BBS
+#    ca_cert: "(( inline ))"  # PEM-encoded CA certificate
 #    client_cert: "(( inline ))"  # PEM-encoded client certificate
 #    client_key: "(( inline ))"  # PEM-encoded client key
 #    etcd:
 #      max_idle_conns_per_host: "(( inline ))"  # maximum number of etcd client idle http connections
 #    require_ssl: true  # enable ssl for all communication with the bbs (false unsupported)
-#  client_timeout: "(( inline ))"  # the http timeout for bbs client requests
+#  client_timeout: "(( inline ))"  # the http timeout for bbs client requests in seconds (golang duration formatted string)
 #  datadog_api_key: ''  # the api key for emmitting datadog metrics
 #  datadog_app_key: ''  # the application key for datadog metrics
 #  datadog_metric_prefix: ''  # the datadog metric prefix
@@ -25,15 +26,29 @@
 #    client_session_cache_size: "(( inline ))"  # capacity of the etcd client tls client cache
 #    machines: "(( inline ))"  # Addresses pointing to the ETCD cluster
 #    require_ssl: true  # boolean to configure ssl connections with the etcd cluster
+#  local_route_emitters: false  # whether or not to enable local route emitters
+#  locket:
+#    api_location: locket.service.cf.internal:8891  # the address of the locket
 #  log_file: "(( inline ))"  # file name for benchmark log output in the BOSH log dir
 #  log_level: "(( inline ))"  # debug, info, error or fatal'
 #  num_populate_workers: "(( inline ))"  # the number of workers generating desired LRPs during setup
 #  num_reps: "(( inline ))"  # the number of rep processes to simulate in test
 #  num_trials: "(( inline ))"  # the number of trials of each benchmark to average across
 #  percent_writes: 5  # percentage of actual LRPs to write on each rep bulk loop
+#  reseed_database: true  # boolean flag to turn on database reseeding
 #  sql:
-#    db_connection_string: "(( inline ))"  # Connection string to use for SQL backend [username:password@tcp(1.1.1.1:1234)/database]
+#    db_connection_string: ''  # Connection string to use for SQL backend [username:password@tcp(1.1.1.1:1234)/database]
 #    db_driver: "(( inline ))"  # driver to use, e.g. postgres or mysql
+#    db_host: ''  # Host for SQL backend
+#    db_password: ''  # Password to use for connecting to SQL backend
+#    db_port: ''  # Port for SQL backend
+#    db_schema: ''  # Database name to use for connecting to SQL backend
+#    db_username: ''  # Username to use for connecting to SQL backend
+#connect_to_instance_address: false  # Connect directly to container IP instead of to the host IP and external port. Suitable only for deployments in which the gorouters and TCP routers can route directly to the container IP of instances.
+#container_proxy:
+#  enabled: false  # Enable envoy proxy on garden containers'
+#database:
+#  max_open_connections: 200  # maximum number of open connections to the database
 #diego:
 #  auctioneer:
 #    bbs:
@@ -44,17 +59,35 @@
 #      client_session_cache_size: "(( inline ))"  # capacity of the tls client cache
 #      max_idle_conns_per_host: "(( inline ))"  # maximum number of idle http connections
 #      require_ssl: true  # enable ssl for all communication with the bbs
-#    cell_state_timeout: 1s  # Timeout applied to HTTP requests to the Cell State endpoint.
+#    ca_cert: "(( inline ))"  # PEM-encoded CA certificate for the auctioneer API server.
+#    cell_state_timeout: 10s  # Timeout applied to HTTP requests to the Cell State endpoint.
 #    debug_addr: 127.0.0.1:17001  # address at which to serve debug info
 #    dropsonde_port: 3457  # local metron agent's port
 #    listen_addr: 0.0.0.0:9016  # address where auctioneer listens for LRP and task start auction requests
+#    locket:
+#      api_location: "(( inline ))"  # Hostname and port of the Locket server. When set, the BBS attempts to claim a lock from the Locket API.
 #    log_level: info  # Log level
+#    rep:
+#      ca_cert: "(( inline ))"  # CA cert for communication to the rep.
+#      client_cert: "(( inline ))"  # Client cert for communication to the rep.
+#      client_key: "(( inline ))"  # Client key for communication to the rep.
+#      client_session_cache_size: 4096  # capacity of the tls client cache
+#      require_tls: false  # Whether to require TLS for communication to the securable rep API server
+#    server_cert: "(( inline ))"  # PEM-encoded certificate for the auctioneer API server.
+#    server_key: "(( inline ))"  # PEM-encoded key for the auctioneer API server.
+#    skip_consul_lock: false  # Set to 'true' for the auctioneer to skip acquiring a Consul lock. Requires 'diego.auctioneer.locket.api_location' to be set.
+#    starting_container_count_maximum: 0  # Maximum number of inflight container starts allowed globally. Value of 0 or less indicates no limit.
 #    starting_container_weight: 0.25  # Factor to bias against cells with starting containers (0.0 - 1.0)
 #  bbs:
 #    active_key_label: "(( inline ))"  # Label of the encryption key to be used when writing to the database
 #    advertisement_base_hostname: bbs.service.cf.internal  # Suffix for the BBS advertised hostname
 #    auctioneer:
-#      api_url: http://auctioneer.service.cf.internal:9016  # Address of the auctioneer API
+#      api_location: "(( inline ))"  # Hostname and port of the auctioneer API, without URI scheme. Recommended in favor of api_url.
+#      api_url: http://auctioneer.service.cf.internal:9016  # URL of the auctioneer API. Deprecated in favor of api_location, but in use through Diego v1.
+#      ca_cert: "(( inline ))"  # CA cert for communication to the auctioneer.
+#      client_cert: "(( inline ))"  # Client cert for communication to the auctioneer.
+#      client_key: "(( inline ))"  # Client key for communication to the auctioneer.
+#      require_tls: false  # Whether to use mutual TLS for communication with the auctioneer API.
 #    ca_cert: "(( inline ))"  # PEM-encoded CA certificate
 #    convergence:
 #      expire_completed_task_duration_in_seconds: 120  # completed, unresolved tasks are deleted after this duration in seconds
@@ -62,7 +95,8 @@
 #      kick_task_duration_in_seconds: 30  # the interval, in seconds, between kicks to tasks in seconds
 #      repeat_interval_in_seconds: 30  # the interval between runs of the converge process
 #    debug_addr: 127.0.0.1:17017  # address at which to serve debug info
-#    desired_lrp_creation_timeout: "(( inline ))"  # expected maximum time to create all components of a desired LRP
+#    desired_lrp_creation_timeout: "(( inline ))"  # expected maximum time to create all components of a desired LRP (golang duration formatted string)
+#    detect_consul_cell_registrations: true  # Whether the BBS should detect Diego cell registrations present in the Consul key-value store. To prevent unexpected loss of capacity, set to 'false' only when the BBS uses Locket and when all Diego cells in the cluster maintain their registrations via Locket.
 #    dropsonde_port: 3457  # local metron agent's port
 #    enable_access_log: false  # Enable access log, i.e. log every request made to the bbs
 #    encryption_keys: []  # List of encryption keys to be used
@@ -75,30 +109,33 @@
 #      - etcd.service.cf.internal
 #      max_idle_conns_per_host: "(( inline ))"  # maximum number of idle http connections
 #      require_ssl: true  # enable ssl for all communication with etcd
-#    health_addr: 127.0.0.1:8890  # address at which to serve API requests
+#    health_addr: 127.0.0.1:8890  # address at which BBS serves '/ping' health-check endpoint
 #    listen_addr: 0.0.0.0:8889  # address at which to serve API requests
+#    locket:
+#      api_location: "(( inline ))"  # Hostname and port of the Locket server. When set, the BBS attempts to claim a lock from the Locket API and will detect Diego cells registered with the Locket API.
 #    log_level: info  # Log level
+#    rep:
+#      ca_cert: "(( inline ))"  # CA cert for communication to the rep.
+#      client_cert: "(( inline ))"  # Client cert for communication to the rep.
+#      client_key: "(( inline ))"  # Client key for communication to the rep.
+#      client_session_cache_size: 0  # capacity of the tls client cache
+#      require_tls: false  # Whether to require TLS for communication to the securable rep API server
 #    require_ssl: true  # require ssl for all communication the bbs
 #    server_cert: "(( inline ))"  # PEM-encoded client certificate
 #    server_key: "(( inline ))"  # PEM-encoded client key
+#    skip_consul_lock: false  # Set to 'true' for the BBS to skip acquiring a Consul lock. Requires 'diego.bbs.locket.api_location' to be set.
 #    sql:
 #      ca_cert: "(( inline ))"  # Bundle of CA certificates for the BBS to verify the SQL server SSL certificate when connecting via SSL
-#      db_connection_string: "(( inline ))"  # Connection string to use for SQL backend (for example, username:password@tcp(1.1.1.1:1234)/database)
+#      db_connection_string: ''  # Connection string to use for SQL backend. DEPRECATED, use db_{host,port,schema,username,password} instead
 #      db_driver: mysql  # mysql,postgres)'
+#      db_host: ''  # Host for SQL backend
+#      db_password: ''  # Password to use for connecting to SQL backend
+#      db_port: ''  # Port for SQL backend
+#      db_schema: ''  # Database name to use for connecting to SQL backend
+#      db_username: ''  # Username to use for connecting to SQL backend
+#      max_idle_connections: "(( inline ))"  # Maximum number of idle connections to the SQL database
 #      max_open_connections: "(( inline ))"  # Maximum number of open connections to the SQL database
 #      require_ssl: false  # Whether to require SSL for BBS communication to the SQL backend
-#  canary:
-#    api: "(( inline ))"  # The Elastic Runtime API endpoint URL
-#    app_domain: "(( inline ))"  # The domain to use for the canary app
-#    app_name: "(( inline ))"  # App name for the canary app
-#    cf_stack: cflinuxfs2  # Stack for the canary app
-#    datadog_api_key: "(( inline ))"  # Datadog API key for the canary app
-#    deployment_name: "(( inline ))"  # Deployment name for the canary app
-#    instance_count: "(( inline ))"  # Number of instances of the canary app
-#    org: "(( inline ))"  # The Elastic Runtime organization name to use for the canary app
-#    password: "(( inline ))"  # The Elastic Runtime API user's password
-#    space: "(( inline ))"  # The Elastic Runtime space name to use for the canary app
-#    user: "(( inline ))"  # The Elastic Runtime API user
 #  cfdot:
 #    bbs:
 #      ca_cert: "(( inline ))"  # PEM-encoded CA certificate
@@ -106,8 +143,8 @@
 #      client_key: "(( inline ))"  # PEM-encoded client key
 #      use_ssl: true  # true if the bbs requires TLS connections, false otherwise
 #  executor:
-#    ca_certs_for_downloads: "(( inline ))"  # Concatenation of trusted CA certificates to be used when downloading assets.
-#    cache_path: "/var/vcap/data/executor_cache"  # path to the executor's cache
+#    auto_disk_capacity_overhead_mb: 0  # the amount of overhead that should be subtracted from the container disk capacity, this only applies when disk_capacity_mb is set to auto
+#    ca_certs_for_downloads: "(( inline ))"  # Concatenation of trusted CA certificates to be used when downloading assets. Deprecated in favor of configuration with tls.{crt,key,ca_cert}
 #    container_inode_limit: 200000  # the inode limit enforced on each garden container.
 #    container_max_cpu_shares: 1024  # the maximum number of cpu shares for a container.
 #    container_metrics_report_interval: "(( inline ))"  # the frequency for emitting container metrics
@@ -116,20 +153,23 @@
 #    disk_capacity_mb: auto  # the container disk capacity the executor should manage.  this should not be greater than the actual disk quota on the VM
 #    export_network_env_vars: true  # Export network environment variables into container (e.g. CF_INSTANCE_IP, CF_INSTANCE_PORT).
 #    garden:
-#      address: "/var/vcap/data/garden/garden.sock"  # Garden server listening address.
-#      network: unix  # Network type for the garden server connection (tcp or unix).
+#      address: 127.0.0.1:9241  # Garden server listening address.
+#      network: tcp  # Network type for the garden server connection (tcp or unix).
 #    garden_healthcheck:
-#      command_retry_pause: 5s  # Time to wait between retrying garden commands
+#      command_retry_pause: 1s  # Time to wait between retrying garden commands
 #      interval: 10m  # Frequency for healtchecking garden
 #      process:
-#        args: "-c, ls > /tmp/test"  # List of command line args to pass to the garden health check process
+#        args: "/c, dir"  # List of command line args to pass to the garden health check process
 #        dir: "(( inline ))"  # Directory to run the healthcheck process from
 #        env: "(( inline ))"  # Environment variables to use when running the garden health check
-#        path: "/bin/sh"  # Path of the command to run to perform a container healthcheck
+#        path: C:\windows\system32\cmd.exe  # Path of the command to run to perform a container healthcheck
 #        user: vcap  # User to use while performing a container healthcheck
 #      timeout: 10m  # Maximum allowed time for garden healthcheck
 #    healthcheck_work_pool_size: 64  # Maximum number of concurrent health check operations.
 #    healthy_monitoring_interval_in_seconds: 30  # Interval to check healthy containers in seconds.
+#    instance_identity_ca_cert: "(( inline ))"  # PEM-encoded CA used to sign instance identity credentials. Enables instance identity if set along with instance_identity_key'
+#    instance_identity_key: "(( inline ))"  # PEM-encoded key used to sign instance identity credentials. Enables instance identity if set along with instance_identity_ca_cert'
+#    instance_identity_validity_period_in_hours: 24  # Validity period for the generated instance identity certificate'
 #    max_cache_size_in_bytes: 10000000000  # maximum size of the cache in bytes - this should leave a healthy overhead for temporary items, etc.
 #    max_concurrent_downloads: 5  # the max concurrent download steps that can be active
 #    memory_capacity_mb: auto  # the memory capacity the executor should manage.  this should not be greater than the actual memory on the VM
@@ -146,7 +186,21 @@
 #    listen_addr: 0.0.0.0:8080  # Address of interface on which to serve files
 #    log_level: info  # Log level
 #    static_directory: "/var/vcap/jobs/file_server/packages/"  # Fully-qualified path to the doc root for the file server's static files
+#  locket:
+#    debug_addr: 127.0.0.1:17018  # address at which to serve debug info
+#    listen_addr: 0.0.0.0:8891  # address at which to serve API requests
+#    log_level: info  # Log level
+#    sql:
+#      ca_cert: "(( inline ))"  # Bundle of CA certificates for the Locket to verify the SQL server SSL certificate when connecting via SSL
+#      db_driver: mysql  # mysql,postgres)'
+#      db_host: ''  # Host for SQL backend
+#      db_password: ''  # Password to use for connecting to SQL backend
+#      db_port: ''  # Port for SQL backend
+#      db_schema: ''  # Database name to use for connecting to SQL backend
+#      db_username: ''  # Username to use for connecting to SQL backend
+#      require_ssl: false  # Whether to require SSL for Locket communication to the SQL backend
 #  rep:
+#    advertise_domain: cell.service.cf.internal  # base domain at which the rep should advertise its secure API
 #    bbs:
 #      api_location: bbs.service.cf.internal:8889  # Address to the BBS Server
 #      ca_cert: "(( inline ))"  # PEM-encoded CA certificate
@@ -155,21 +209,33 @@
 #      client_session_cache_size: "(( inline ))"  # capacity of the tls client cache
 #      max_idle_conns_per_host: "(( inline ))"  # maximum number of idle http connections
 #      require_ssl: true  # enable ssl for all communication with the bbs
-#    consul_agent_port: 8500  # local consul agent's port
+#    ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#    consul:
+#      ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#      client_cert: "(( inline ))"  # PEM-encoded client certificate
+#      client_key: "(( inline ))"  # PEM-encoded client key
+#      require_tls: false  # Require mutual TLS to talk to the local consul API
 #    debug_addr: 127.0.0.1:17008  # address at which to serve debug info
 #    dropsonde_port: 3457  # local metron agent's port
+#    enable_legacy_api_endpoints: true  # Whether to enable the auction, LRP, and Task endpoints on the legacy, insecurable API server
 #    evacuation_polling_interval_in_seconds: 10  # The interval to look for completed tasks and LRPs during evacuation in seconds
 #    evacuation_timeout_in_seconds: 600  # The time to wait for evacuation to complete in seconds
+#    job_name: rep_windows  # The name of the Diego job referenced by this spec (DO NOT override)
 #    listen_addr: 0.0.0.0:1800  # address to serve auction and LRP stop requests on
+#    listen_addr_admin: 127.0.0.1:1800  # When enable_legacy_api_endpoints is set to false, serve (insecure) ping and evacuate requests on this address and port
+#    listen_addr_securable: 0.0.0.0:1801  # address where rep listens for LRP and task start auction requests
+#    locket:
+#      api_location: "(( inline ))"  # Hostname and port of the locket server
 #    log_level: info  # Log level
 #    optional_placement_tags: []  # Array of optional tags used for scheduling Tasks and LRPs
 #    placement_tags: []  # Array of tags used for scheduling Tasks and LRPs
 #    polling_interval_in_seconds: 30  # The interval to look for completed tasks and LRPs in seconds
 #    preloaded_rootfses:
 #    - windows2012R2:/tmp/windows2012R2
-#    rootfs_providers:
-#    - docker
-#    stack: windows2012R2  # The stack for which to handle requests
+#    require_tls: true  # Whether to require mutual TLS for communication to the securable rep API server
+#    rootfs_providers: []  # Array of schemes for which the underlying garden can support arbitrary root filesystems
+#    server_cert: "(( inline ))"  # PEM-encoded server certificate
+#    server_key: "(( inline ))"  # PEM-encoded server key
 #    trusted_certs: "(( inline ))"  # Concatenation of trusted CA certificates to be made available on the cell.
 #    use_azure_fault_domains: false  # Use Azure Fault-Domains to determine the value of the zone. The value of the zone will be z<FD-index>. e.g. z0, z1, etc.
 #    zone: "(( inline ))"  # The zone associated with the rep
@@ -184,6 +250,9 @@
 #      require_ssl: true  # enable ssl for all communication with the bbs
 #    debug_addr: 127.0.0.1:17009  # address at which to serve debug info
 #    dropsonde_port: 3457  # local metron agent's port
+#    healthcheck_address: 127.0.0.1:17011  # address at which to serve debug info
+#    job_name: route_emitter_windows  # The name of the Diego job referenced by this spec (DO NOT override)
+#    local_mode: false  # Enable cell-local mode for the route-emitter. In this mode, the route-emitter emits route registrations only for the instances associated to its cell, as determined by the BOSH-assigned VM identifier `spec.id`.
 #    log_level: info  # Log level
 #    nats:
 #      machines: "(( inline ))"  # IP of each NATS cluster member.
@@ -211,13 +280,48 @@
 #    dropsonde_port: 3457  # local metron agent's port
 #    enable_cf_auth: false  # Allow ssh access for cf applications
 #    enable_diego_auth: false  # Allow ssh access for diego applications
+#    healthcheck_listen_addr: 0.0.0.0:2223  # address for the ssh proxy healthcheck server
 #    host_key: "(( inline ))"  # PEM encoded RSA private key used to identify host
 #    listen_addr: 0.0.0.0:2222  # address for the proxy to listen on
 #    log_level: info  # Log level
+#    uaa:
+#      ca_cert: "(( inline ))"  # The CA certificate of the UAA
+#      port: "(( inline ))"  # The port to contact UAA on
+#      url: https://uaa.service.cf.internal  # The domain name of the UAA
 #    uaa_secret: "(( inline ))"  # The oauth client secret used to authenticate the ssh-proxy with the uaa
 #    uaa_token_url: "(( inline ))"  # URL of the UAA token endpoint
 #  ssl:
 #    skip_cert_verify: false  # when connecting over https, ignore bad ssl certificates
+#dropsonde_port: 3457  # local metron agent's port
+#enable_declarative_healthcheck: false  # When set, enables the declarative check tests in vizzini'
+#loggregator:
+#  ca_cert: "(( inline ))"  # CA Cert used to communicate with local metron agent over gRPC
+#  cert: "(( inline ))"  # Cert used to communicate with local metron agent over gRPC
+#  key: "(( inline ))"  # Key used to communicate with local metron agent over gRPC
+#  use_v2_api: false  # True to use local metron agent gRPC v2 api. False, to use UDP v1 api
+#  v2_api_port: 3458  # Local metron agent gRPC port
+#register_direct_instance_routes: false  # Use the container IP address and internal port instead of the host IP address and external port when registering route endpoints. Suitable only for deployments in which the gorouters and TCP routers can route directly to the container IP of instances.
+#routing_api:
+#  auth_enabled: true  # Enable UAA authentication when communicating with the Routing API
+#  port: 3000  # Routing API port to be used by the tcp route-emitter
+#  url: http://routing-api.service.cf.internal  # Routing API uri to be used by the tcp route-emitter
+#syslog_daemon_config:
+#  address: ''  # Syslog host
+#  port: ''  # Syslog port
+#  transport: udp  # Syslog transport protocol (tcp or udp)
+#tcp:
+#  enabled: false  # Enable the route-emitter in cell-local mode to emit TCP routes for instances to the Routing API.
+#tls:
+#  ca_cert: "(( inline ))"  # PEM-encoded tls client CA certificate for asset upload/download
+#  cert: "(( inline ))"  # PEM-encoded tls certificate that can be used for client and server authentication
+#  key: "(( inline ))"  # PEM-encoded tls client key
+#uaa:
+#  ca_cert: "(( inline ))"  # UAA ca certificate
+#  client_name: tcp_emitter  # UAA client id
+#  client_secret: "(( inline ))"  # UAA client secret
+#  hostname: uaa.service.cf.internal  # UAA hostname
+#  port: 8443  # The port on which UAA accepts TLS connections
+#  skip_cert_verify: false  # Skip certificate verification when communicating with UAA
 #vizzini:
 #  bbs:
 #    api_location: bbs.service.cf.internal:8889  # The address of the BBS
@@ -226,6 +330,8 @@
 #    require_ssl: true  # enable ssl for all communication with the bbs
 #  eventually_timeout: "(( inline ))"  # default timeout for ginkgo assertions
 #  nodes: 4  # The number of nodes to run the tests with
+#  rep:
+#    placement_tags: []  # use placement tags for created LRPs
 #  routable_domain_suffix: "(( inline ))"  # The deployment's routable domain name
 #  ssh:
 #    proxy_address: ssh-proxy.service.cf.internal:2222  # Host and port for the SSH proxy
