@@ -1,0 +1,979 @@
+#---
+#acceptance_tests:
+#  admin_password: "(( inline ))"  # The Elastic Runtime API admin user's password
+#  admin_user: "(( inline ))"  # The Elastic Runtime API admin user
+#  api: "(( inline ))"  # The Elastic Runtime API endpoint URL
+#  apps_domain: "(( inline ))"  # The Elastic Runtime Application Domain
+#  async_service_operation_timeout: "(( inline ))"  # Timeout for asynchronous service operations
+#  backend: ''  # App tests push their apps using the backend specified. Route service tests require this flag to be set to diego in order to run.
+#  binary_buildpack_name: "(( inline ))"  # The name of the binary buildpack to use in acceptance tests that specify a buildpack.
+#  broker_start_timeout: "(( inline ))"  # Timeout for broker starts
+#  cf_dial_timeout_in_seconds: "(( inline ))"  # Sets the cli timeout (CF_DIAL_TIMEOUT)
+#  cf_push_timeout: "(( inline ))"  # Timeout for cf push
+#  default_timeout: "(( inline ))"  # Default Timeout
+#  enable_color: true  # Enable colorized output on ginkgo.
+#  existing_user: "(( inline ))"  # The username of an existing user. If set, the acceptance-tests will push apps and perform other actions as this user, otherwise its default behaviour is to create a temporary user for such actions.
+#  existing_user_password: "(( inline ))"  # The password of the existing user. Only required if the existing user property is also being set.
+#  go_buildpack_name: "(( inline ))"  # The name of the go buildpack to use in acceptance tests that specify a buildpack.
+#  include_apps: true  # Flag to include the apps test suite.
+#  include_backend_compatibility: false  # Flag to inlude whether we check DEA/Diego interoperability
+#  include_detect: true  # Flag to run tests in the detect suite
+#  include_diego_docker: false  # Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
+#  include_diego_ssh: false  # Flag to include the diego ssh suite
+#  include_internet_dependent: false  # Flag to include the internet dependent test suite.
+#  include_privileged_container_support: "(( inline ))"  # Flag for running tests that depend on privileged container support being enabled in your Cloud Foundry.
+#  include_route_services: false  # Flag to include the route services tests. Diego must be deployed for these tests to pass.
+#  include_routing: true  # Flag to include the routing tests. Diego must be deployed for these tests to pass.
+#  include_security_groups: false  # Flag to include the security groups test suite.
+#  include_services: false  # Flag to include the services API test suite.
+#  include_sso: false  # Flag to include the services tests that integrate with SSO.
+#  include_tasks: false  # Flag to include the v3 task tests dependent on the CC task_creation feature flag.
+#  include_v3: false  # Flag to include the v3 API test suite.
+#  java_buildpack_name: "(( inline ))"  # The name of the java buildpack to use in acceptance tests that specify a buildpack.
+#  long_curl_timeout: "(( inline ))"  # Timeout for long curls
+#  nodejs_buildpack_name: "(( inline ))"  # The name of the nodejs buildpack to use in acceptance tests that specify a buildpack.
+#  nodes: 2  # The number of parallel test executors to spawn. The larger the number the higher the stress on the system.
+#  persistent_app_host: "(( inline ))"  # The default name for the persistent app host.
+#  persistent_app_org: "(( inline ))"  # The default name for the persistent app org.
+#  persistent_app_quota_name: "(( inline ))"  # The default name for the persistent app quota name.
+#  persistent_app_space: "(( inline ))"  # The default name for the persistent app space.
+#  php_buildpack_name: "(( inline ))"  # The name of the php buildpack to use in acceptance tests that specify a buildpack.
+#  python_buildpack_name: "(( inline ))"  # The name of the python buildpack to use in acceptance tests that specify a buildpack.
+#  ruby_buildpack_name: "(( inline ))"  # The name of the ruby buildpack to use in acceptance tests that specify a buildpack.
+#  skip_regex: "(( inline ))"  # Regex for tests that should be skipped
+#  skip_ssl_validation: false  # Toggles cli verification of the Elastic Runtime API SSL certificate
+#  staticfile_buildpack_name: "(( inline ))"  # The name of the staticfile buildpack to use in acceptance tests that specify a buildpack.
+#  use_http: false  # Flag for using HTTP when making api and application requests rather than the default HTTPS
+#  verbose: false  # Whether to pass the -v flag to cf-acceptance-tests
+#app_domains: "(( inline ))"  # ''user.app.space.foo'', a user app called ''neat'' will listen at ''http://neat.user.app.space.foo'')'
+#app_ssh:
+#  host_key_fingerprint: "(( inline ))"  # MD5 fingerprint of the host key of the SSH proxy that brokers connections to application instances
+#  oauth_client_id: ssh-proxy  # The oauth client ID of the SSH proxy
+#  port: 2222  # External port for SSH access to application instances
+#blobstore:
+#  admin_users: "(( inline ))"  # |
+#  internal_access_rules:
+#  - allow 10.0.0.0/8;
+#  - allow 172.16.0.0/12;
+#  - allow 192.168.0.0/16;
+#  max_upload_size: 5000m  # Max allowed file size for upload
+#  nginx_workers_per_core: 2  # Number of NGINX worker processes per CPU core
+#  port: 8080  # TCP port on which the blobstore server (nginx) listens
+#  secure_link:
+#    secret: "(( inline ))"  # The secret used for signing URLs
+#  tls:
+#    cert: "(( inline ))"  # The PEM-encoded certificate (optionally as a certificate chain) for serving blobs over TLS/SSL
+#    port: 4443  # The TCP port on which the internal blobstore server listens
+#    private_key: "(( inline ))"  # The PEM-encoded private key for signing TLS/SSL traffic
+#build: ''  # "'build' attribute in the /v2/info endpoint"
+#capi:
+#  cc_uploader:
+#    cc:
+#      external_port: 9022  # External Cloud Controller port
+#      job_polling_interval_in_seconds: "(( inline ))"  # the interval between job polling requests
+#    consul_agent_port: 8500  # local consul agent's port
+#    debug_addr: 0.0.0.0:17018  # address at which to serve debug info
+#    dropsonde_port: 3457  # local metron agent's port
+#    listen_addr: 0.0.0.0:9090  # Address of interface on which to serve files
+#    log_level: info  # Log level
+#  nsync:
+#    bbs:
+#      api_location: bbs.service.cf.internal:8889  # Address to the BBS Server
+#      ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#      client_cert: "(( inline ))"  # PEM-encoded client certificate
+#      client_key: "(( inline ))"  # PEM-encoded client key
+#      client_session_cache_size: "(( inline ))"  # capacity of the tls client cache
+#      max_idle_conns_per_host: "(( inline ))"  # maximum number of idle http connections
+#      require_ssl: true  # enable ssl for all communication with the bbs
+#    bulker_debug_addr: 0.0.0.0:17007  # address at which to serve debug info
+#    cc:
+#      base_url: "(( inline ))"  # base URL of the cloud controller
+#      basic_auth_password: "(( inline ))"  # basic auth password for CC bulk API
+#      basic_auth_username: internal_user  # basic auth username for CC bulk API
+#      bulk_batch_size: 500  # number of apps to fetch at once from bulk API
+#      external_port: 9022  # External Cloud Controller port
+#      fetch_timeout_in_seconds: 30  # How long to wait for completion of requests to CC in seconds.
+#      polling_interval_in_seconds: 30  # interval at which to poll bulk API in seconds
+#    consul_agent_port: 8500  # local consul agent's port
+#    diego_privileged_containers: false  # Whether or not to use privileged containers for  buildpack based LRPs and tasks. Containers with a docker-image-based rootfs will continue to always be unprivileged and cannot be changed.
+#    dropsonde_port: 3457  # local metron agent's port
+#    file_server_url: http://file-server.service.cf.internal:8080  # URL of file server
+#    lifecycle_bundles:
+#    - buildpack/cflinuxfs2:buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
+#    - buildpack/windows2012R2:windows_app_lifecycle/windows_app_lifecycle.tgz
+#    - docker:docker_app_lifecycle/docker_app_lifecycle.tgz
+#    listen_addr: 0.0.0.0:8787  # Address from which nsync serves requests
+#    listener_debug_addr: 0.0.0.0:17006  # address at which to serve debug info
+#    log_level: info  # Log level
+#  stager:
+#    bbs:
+#      api_location: bbs.service.cf.internal:8889  # Address to the BBS Server
+#      ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#      client_cert: "(( inline ))"  # PEM-encoded client certificate
+#      client_key: "(( inline ))"  # PEM-encoded client key
+#      client_session_cache_size: "(( inline ))"  # capacity of the tls client cache
+#      max_idle_conns_per_host: "(( inline ))"  # maximum number of idle http connections
+#      require_ssl: true  # enable ssl for all communication with the bbs
+#    cc:
+#      basic_auth_password: "(( inline ))"  # Basic auth password for CC internal API
+#      basic_auth_username: internal_user  # Basic auth username for CC internal API
+#      external_port: 9022  # External port to access the Cloud Controller
+#      internal_service_hostname: cloud-controller-ng.service.cf.internal  # Internal CC host name
+#    cc_uploader_url: http://cc-uploader.service.cf.internal:9090  # URL of cc uploader
+#    consul_agent_port: 8500  # local consul agent's port
+#    debug_addr: 0.0.0.0:17011  # address at which to serve debug info
+#    diego_privileged_containers: false  # Whether or not to use privileged containers for staging tasks.
+#    docker_registry_address: docker-registry.service.cf.internal:8080  # Address of the Docker Registry used for image caching
+#    docker_staging_stack: cflinuxfs2  # stack to use for staging Docker applications
+#    dropsonde_port: 3457  # local metron agent's port
+#    file_server_url: http://file-server.service.cf.internal:8080  # URL of file server
+#    insecure_docker_registry_list: []  # An array of insecure Docker registries in the form of <HOSTNAME|IP>:PORT
+#    lifecycle_bundles:
+#    - buildpack/cflinuxfs2:buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
+#    - buildpack/windows2012R2:windows_app_lifecycle/windows_app_lifecycle.tgz
+#    - docker:docker_app_lifecycle/docker_app_lifecycle.tgz
+#    listen_addr: 0.0.0.0:8888  # Address from which the Stager serves requests
+#    log_level: info  # Log level
+#    staging_task_callback_url: http://stager.service.cf.internal:8888  # URL for staging task callbacks
+#  tps:
+#    bbs:
+#      api_location: bbs.service.cf.internal:8889  # Address to the BBS Server
+#      ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#      client_cert: "(( inline ))"  # PEM-encoded client certificate
+#      client_key: "(( inline ))"  # PEM-encoded client key
+#      client_session_cache_size: "(( inline ))"  # capacity of the tls client cache
+#      max_idle_conns_per_host: "(( inline ))"  # maximum number of idle http connections
+#      require_ssl: true  # enable ssl for all communication with the bbs
+#    cc:
+#      basic_auth_password: "(( inline ))"  # Basic auth password for CC internal API
+#      basic_auth_username: internal_user  # Basic auth username for CC internal API
+#      external_port: 9022  # External port to access the Cloud Controller
+#      internal_service_hostname: cloud-controller-ng.service.cf.internal  # Internal CC host name
+#    consul_agent_port: 8500  # local consul agent's port
+#    dropsonde_port: 3457  # local metron agent's port
+#    listener:
+#      debug_addr: 0.0.0.0:17014  # address at which to serve debug info
+#      listen_addr: 0.0.0.0:1518  # address at which to serve API requests
+#    log_level: info  # Log level
+#    max_in_flight_requests: 200  # Maximum number of requests to handle at once.
+#    traffic_controller_url: ws://loggregator-trafficcontroller.service.cf.internal:8081  # URL of Traffic controller
+#    watcher:
+#      debug_addr: 0.0.0.0:17015  # address at which to serve debug info
+#cc:
+#  allow_app_ssh_access: true  # Allow users to change the value of the app-level allow_ssh attribute
+#  allowed_cors_domains: []  # List of domains (including scheme) from which Cross-Origin requests will be accepted, a * can be used as a wildcard for any part of a domain
+#  app_bits_max_body_size: 1536M  # Maximum body size for nginx bits uploads
+#  app_bits_upload_grace_period_in_seconds: 1200  # Extra token expiry time while uploading big apps.
+#  app_events:
+#    cutoff_age_in_days: 31  # How old an app event should stay in cloud controller database before being cleaned up
+#  app_usage_events:
+#    cutoff_age_in_days: 31  # How old an app usage event should stay in cloud controller database before being cleaned up
+#  audit_events:
+#    cutoff_age_in_days: 31  # How old an audit event should stay in cloud controller database before being cleaned up
+#  bits_service:
+#    enabled: false  # Enable integration of the bits-service incubator (experimental)
+#    private_endpoint: ''  # Private url for the bits-service service
+#    public_endpoint: ''  # Public url for the bits-service service
+#  broker_client_default_async_poll_interval_seconds: 60  # Specifies interval on which the CC will poll a service broker for asynchronous actions
+#  broker_client_max_async_poll_duration_minutes: 10080  # The max duration the CC will fetch service instance state from a service broker. Default is 1 week
+#  broker_client_timeout_seconds: 60  # For requests to service brokers, this is the HTTP (open and read) timeout setting.
+#  buildpacks:
+#    blobstore_type: fog  # [''fog'', ''webdav'']'
+#    buildpack_directory_key: cc-buildpacks  # Directory (bucket) used store buildpacks.  It does not have be pre-created.
+#    cdn:
+#      key_pair_id: ''  # Key pair name for signed download URIs
+#      private_key: ''  # Private key for signing download URIs
+#      uri: ''  # URI for a CDN to used for buildpack downloads
+#    fog_aws_storage_options: "(( inline ))"  # [''encryption''].'
+#    fog_connection: "(( inline ))"  # Fog connection hash
+#    webdav_config:
+#      blobstore_timeout: 5  # The timeout in seconds for requests to the blobstore
+#      ca_cert: ''  # The ca cert to use when communicating with webdav
+#      password: ''  # The basic auth password that CC uses to connect to the admin endpoint on webdav
+#      private_endpoint: https://blobstore.service.cf.internal:4443  # https://blobstore.internal'
+#      public_endpoint: ''  # https://blobstore.com'
+#      username: ''  # The basic auth user that CC uses to connect to the admin endpoint on webdav
+#  bulk_api_password: "(( inline ))"  # Password for the bulk api
+#  bulk_api_user: bulk_api  # User used to access the bulk_api, health_manager uses it to connect to the cc, announced over NATS
+#  cc_partition: default  # Deprecated. Defines a 'partition' for the health_manager job
+#  client_max_body_size: 1536M  # Maximum body size for nginx
+#  completed_tasks:
+#    cutoff_age_in_days: 31  # How long a completed task will stay in cloud controller database before being cleaned up based on last updated time with success or failure.
+#  core_file_pattern: "/var/vcap/sys/cores/core-%e-%s-%p-%t"  # Filename template for core dump files. Use an empty string if you don't want core files saved.
+#  db_encryption_key: ''  # key for encrypting sensitive values in the CC database
+#  db_logging_level: debug2  # Log level for cc database operations
+#  dea_use_https: false  # enable ssl for communication with DEAs
+#  default_app_disk_in_mb: 1024  # The default disk space an app gets
+#  default_app_memory: 1024  # How much memory given to an app if not specified
+#  default_health_check_timeout: 60  # Default health check timeout (in seconds) that can be set for the app
+#  default_quota_definition: default  # Local to use a local (NFS) file system.  AWS to use AWS.
+#  default_running_security_groups: "(( inline ))"  # The default running security groups that will be seeded in CloudController.
+#  default_stack: cflinuxfs2  # The default stack to use if no custom stack is specified by an app.
+#  default_staging_security_groups: "(( inline ))"  # The default staging security groups that will be seeded in CloudController.
+#  default_to_diego_backend: false  # Use Diego backend by default for new apps
+#  development_mode: false  # Enable development features for monitoring and insight
+#  diego:
+#    nsync_url: http://nsync.service.cf.internal:8787  # URL of the Diego nsync service
+#    stager_url: http://stager.service.cf.internal:8888  # URL of the Diego stager service
+#    tps_url: http://tps.service.cf.internal:1518  # URL of the Diego tps service
+#  directories:
+#    diagnostics: "/var/vcap/data/cloud_controller_ng/diagnostics"  # The directory where operator requested diagnostic files should be placed
+#    tmpdir: "/var/vcap/data/cloud_controller_ng/tmp"  # The directory to use for temporary files
+#  disable_custom_buildpacks: false  # Disable external (i.e. git) buildpacks? (Admin buildpacks and system buildpacks only.)
+#  droplets:
+#    blobstore_type: fog  # [''fog'', ''webdav'']'
+#    cdn:
+#      key_pair_id: ''  # Key pair name for signed download URIs
+#      private_key: ''  # Private key for signing download URIs
+#      uri: ''  # URI for a CDN to used for droplet downloads
+#    droplet_directory_key: cc-droplets  # Directory (bucket) used store droplets.  It does not have be pre-created.
+#    fog_aws_storage_options: "(( inline ))"  # [''encryption''].'
+#    fog_connection: "(( inline ))"  # Fog connection hash
+#    max_staged_droplets_stored: 5  # Number of recent, staged droplets stored per app (not including current droplet)
+#    webdav_config:
+#      blobstore_timeout: 5  # The timeout in seconds for requests to the blobstore
+#      ca_cert: ''  # The ca cert to use when communicating with webdav
+#      password: ''  # The basic auth password that CC uses to connect to the admin endpoint on webdav
+#      private_endpoint: https://blobstore.service.cf.internal:4443  # https://blobstore.internal'
+#      public_endpoint: ''  # https://blobstore.com'
+#      username: ''  # The basic auth user that CC uses to connect to the admin endpoint on webdav
+#  external_host: api  # Host part of the cloud_controller api URI, will be joined with value of 'domain'
+#  external_port: 9022  # External port to connect to the CC
+#  external_protocol: https  # The protocol used to access the CC API from an external entity
+#  failed_jobs:
+#    cutoff_age_in_days: 31  # How old a failed job should stay in cloud controller database before being cleaned up
+#  feature_disabled_message: "(( inline ))"  # Custom message to use for a disabled feature.
+#  flapping_crash_count_threshold: 3  # The threshold of crashes after which the app is marked as flapping
+#  info:
+#    custom: "(( inline ))"  # Custom attribute keys and values for /v2/info endpoint
+#  install_buildpacks: "(( inline ))"  # Set of buildpacks to install during deploy
+#  instance_file_descriptor_limit: 16384  # The file descriptors made available to each app instance
+#  internal_api_password: "(( inline ))"  # Password for hm9000 API
+#  internal_api_user: internal_user  # Username for hm9000 API
+#  internal_service_hostname: cloud-controller-ng.service.cf.internal  # Internal hostname used to resolve the address of the Cloud Controller
+#  jobs:
+#    app_bits_packer:
+#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
+#    app_events_cleanup:
+#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
+#    app_usage_events_cleanup:
+#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
+#    blobstore_delete:
+#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
+#    blobstore_upload:
+#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
+#    droplet_deletion:
+#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
+#    droplet_upload:
+#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
+#    generic:
+#      number_of_workers: 1  # Number of generic cloud_controller_worker workers
+#    global:
+#      timeout_in_seconds: 14400  # The longest any job can take before it is cancelled unless overriden per job
+#    local:
+#      number_of_workers: 2  # Number of local cloud_controller_worker workers
+#  logging_level: info  # Log level for cc
+#  logging_max_retries: 1  # Passthru value for Steno logger
+#  maximum_app_disk_in_mb: 2048  # The maximum amount of disk a user can request
+#  maximum_health_check_timeout: 180  # Maximum health check timeout (in seconds) that can be set for the app
+#  min_cli_version: "(( inline ))"  # Minimum version of the CF CLI to work with the API.
+#  min_recommended_cli_version: "(( inline ))"  # Minimum recommended version of the CF CLI.
+#  minimum_candidate_stagers: 5  # Minimum number of candidate deas for staging.  Defaults to 5, should be fewer than the total DEAs in the deployment.
+#  newrelic:
+#    capture_params: false  # Capture and send query params to NewRelic
+#    developer_mode: false  # Activate NewRelic developer mode
+#    environment_name: development  # The environment name used by NewRelic
+#    license_key: "(( inline ))"  # The api key for NewRelic
+#    log_file_path: "/var/vcap/sys/log/cloud_controller_ng/newrelic"  # The location for NewRelic to log to
+#    monitor_mode: false  # Activate NewRelic monitor mode
+#    transaction_tracer:
+#      enabled: false  # Enable transaction tracing in NewRelic
+#      record_sql: 'off'  # [off | obfuscated | raw]'
+#  nginx_access_log_destination: "/var/vcap/sys/log/nginx_cc/nginx.access.log"  # The nginx access log destination. This can be used to route access logs to a file, syslog, or a memory buffer.
+#  nginx_access_log_format: '$host - [$time_local] "$request" $status $bytes_sent "$http_referer" "$http_user_agent" $proxy_add_x_forwarded_for vcap_request_id:$upstream_http_x_vcap_request_id response_time:$upstream_response_time  # The nginx log format string to use when writing to the access log.
+#
+#'
+#  nginx_error_log_destination: "/var/vcap/sys/log/nginx_cc/nginx.error.log"  # The nginx error log destination. This can be used to route error logs to a file, syslog, or a memory buffer.
+#  nginx_error_log_level: error  # The lowest severity nginx log level to capture in the error log.
+#  nginx_rate_limit_general: "(( inline ))"  # The rate limiting and burst value to use for '/'
+#  nginx_rate_limit_zones: "(( inline ))"  # 'Array of zones to do rate limiting for. '
+#  packages:
+#    app_package_directory_key: cc-packages  # Directory (bucket) used store app packages.  It does not have be pre-created.
+#    blobstore_type: fog  # [''fog'', ''webdav'']'
+#    cdn:
+#      key_pair_id: ''  # Key pair name for signed download URIs
+#      private_key: ''  # Private key for signing download URIs
+#      uri: ''  # URI for a CDN to used for app package downloads
+#    fog_aws_storage_options: "(( inline ))"  # [''encryption''].'
+#    fog_connection: "(( inline ))"  # Fog connection hash
+#    max_package_size: 1073741824  # Maximum size of application package
+#    max_valid_packages_stored: 5  # Number of recent, valid packages stored per app (not including package for current droplet)
+#    webdav_config:
+#      blobstore_timeout: 5  # The timeout in seconds for requests to the blobstore
+#      ca_cert: ''  # The ca cert to use when communicating with webdav
+#      password: ''  # The basic auth password that CC uses to connect to the admin endpoint on webdav
+#      private_endpoint: https://blobstore.service.cf.internal:4443  # https://blobstore.internal'
+#      public_endpoint: ''  # https://blobstore.com'
+#      username: ''  # The basic auth user that CC uses to connect to the admin endpoint on webdav
+#  pending_droplets:
+#    frequency_in_seconds: 300  # How often the droplet pending cleanup job runs
+#  placement_top_stager_percentage: 10  # The percentage of top stagers considered when choosing a stager
+#  quota_definitions: "(( inline ))"  # Hash of default quota definitions. Overriden by custom quota definitions.
+#  renderer:
+#    default_results_per_page: 50  # Default number of results returned per page if user does not specify
+#    max_inline_relations_depth: 2  # Maximum depth of inlined relationships in the result
+#    max_results_per_page: 100  # Maximum number of results returned per page
+#  reserved_private_domains: "(( inline ))"  # File location of a list of reserved private domains (for file format, see https://publicsuffix.org/)
+#  resource_pool:
+#    blobstore_type: fog  # [''fog'', ''webdav'']'
+#    cdn:
+#      key_pair_id: ''  # Key pair name for signed download URIs
+#      private_key: ''  # Private key for signing download URIs
+#      uri: ''  # URI for a CDN to used for resource pool downloads
+#    fog_aws_storage_options: "(( inline ))"  # [''encryption''].'
+#    fog_connection: "(( inline ))"  # Fog connection hash
+#    maximum_size: 536870912  # Maximum size of a resource to add to the pool
+#    minimum_size: 65536  # Minimum size of a resource to add to the pool
+#    resource_directory_key: cc-resources  # Directory (bucket) used store app resources.  It does not have be pre-created.
+#    webdav_config:
+#      blobstore_timeout: 5  # The timeout in seconds for requests to the blobstore
+#      ca_cert: ''  # The ca cert to use when communicating with webdav
+#      password: ''  # The basic auth password that CC uses to connect to the admin endpoint on webdav
+#      private_endpoint: https://blobstore.service.cf.internal:4443  # https://blobstore.internal'
+#      public_endpoint: ''  # https://blobstore.com'
+#      username: ''  # The basic auth user that CC uses to connect to the admin endpoint on webdav
+#  run_prestart_migrations: true  # Run Cloud Controller DB migrations in BOSH pre-start script. Should be changed to false for deployments where the PostgreSQL job is deployed to the same VM as Cloud Controller. Otherwise, the default of true is preferable.
+#  security_event_logging:
+#    enabled: false  # Enable logging of all requests made to the Cloud Controller in CEF format.
+#  security_group_definitions: "(( inline ))"  # Array of security groups that will be seeded into CloudController.
+#  service_usage_events:
+#    cutoff_age_in_days: 31  # How old a service usage event should stay in cloud controller database before being cleaned up
+#  srv_api_uri: "(( inline ))"  # API URI of cloud controller
+#  stacks:
+#  - name: cflinuxfs2
+#    description: Cloud Foundry Linux-based filesystem
+#  staging_file_descriptor_limit: 16384  # File descriptor limit for staging tasks
+#  staging_timeout_in_seconds: 900  # Timeout for staging a droplet
+#  staging_upload_password: ''  # User's password used to access internal endpoints of Cloud Controller to upload files when staging
+#  staging_upload_user: ''  # User name used to access internal endpoints of Cloud Controller to upload files when staging
+#  statsd_host: 127.0.0.1  # The host for the statsd server, defaults to the local metron agent
+#  statsd_port: 8125  # The port for the statsd server, defaults to the local metron agent
+#  system_hostnames:
+#  - api
+#  - uaa
+#  - login
+#  - doppler
+#  - loggregator
+#  - hm9000
+#  thresholds:
+#    api:
+#      alert_if_above_mb: 3500  # The cc will alert if memory remains above this threshold for 3 monit cycles
+#      restart_if_above_mb: 3750  # The cc will restart if memory remains above this threshold for 3 monit cycles
+#      restart_if_consistently_above_mb: 3500  # The cc will restart if memory remains above this threshold for 15 monit cycles
+#    worker:
+#      alert_if_above_mb: 384  # The cc will alert if memory remains above this threshold for 3 monit cycles
+#      restart_if_above_mb: 512  # The cc will restart if memory remains above this threshold for 3 monit cycles
+#      restart_if_consistently_above_mb: 384  # The cc will restart if memory remains above this threshold for 15 monit cycles
+#  uaa_resource_id: cloud_controller,cloud_controller_service_permissions  # Name of service to register to UAA
+#  users_can_select_backend: true  # Allow non-admin users to switch their apps between DEA and Diego backends
+#  volume_services_enabled: false  # Enable binding to services that provide volume_mount information.
+#ccdb:
+#  address: "(( inline ))"  # The address of the database server
+#  databases: "(( inline ))"  # Contains the name of the database on the database server
+#  db_scheme: postgres  # The type of database being used. mysql or postgres
+#  max_connections: 25  # Maximum connections for Sequel
+#  pool_timeout: 10  # The timeout for Sequel pooled connections
+#  port: "(( inline ))"  # The port of the database server
+#  roles: "(( inline ))"  # Users to create on the database when seeding
+#collector:
+#  aws:
+#    access_key_id: "(( inline ))"  # AWS access key for CloudWatch access
+#    secret_access_key: "(( inline ))"  # AWS secret for CloudWatch access
+#  datadog:
+#    api_key: "(( inline ))"  # Datadog API key
+#    application_key: "(( inline ))"  # Datadog application key
+#  deployment_name: "(( inline ))"  # name for this bosh deployment. All metrics will be tagged with deployment:XXX when sending them to CloudWatch, Datadog and Graphite
+#  graphite:
+#    address: "(( inline ))"  # IP address of Graphite
+#    port: "(( inline ))"  # TCP port of Graphite
+#  intervals:
+#    discover: 60  # the interval in seconds that the collector attempts to discover components
+#    healthz: 30  # the interval in seconds that healthz is checked
+#    local_metrics: 30  # the interval in seconds that local_metrics are checked
+#    nats_ping: 30  # the interval in seconds that the collector pings nats to record latency
+#    prune: 300  # the interval in seconds that the collector attempts to prune unresponsive components
+#    varz: 30  # the interval in seconds that varz is checked
+#  logging_level: info  # the logging level for the collector
+#  memory_threshold: 800  # Memory threshold for collector restart (Mb)
+#  opentsdb:
+#    address: "(( inline ))"  # IP address of OpenTsdb
+#    port: "(( inline ))"  # TCP port of OpenTsdb
+#  use_aws_cloudwatch: false  # enable CloudWatch plugin
+#  use_datadog: false  # enable Datadog plugin
+#  use_graphite: false  # enable Graphite plugin
+#  use_tsdb: false  # enable OpenTsdb plugin
+#consul:
+#  agent:
+#    datacenter: dc1  # Name of the agent's datacenter.
+#    dns_config:
+#      allow_stale: false  # Enables a stale query for DNS information. This allows any Consul server, rather than only the leader, to service the request.
+#      max_stale: 5s  # When allow_stale is specified, this is used to limit how stale results are allowed to be.
+#      recursor_timeout: 5s  # Timeout used by Consul when recursively querying an upstream DNS server.
+#    domain: "(( inline ))"  # Domain suffix for DNS
+#    log_level: info  # Agent log level.
+#    mode: client  # Mode to run the agent in. (client or server)
+#    protocol_version: 2  # The Consul protocol to use.
+#    servers:
+#      lan: []  # LAN server addresses to join on start.
+#      wan: []  # WAN server addresses to join.
+#    services: {}  # Map of consul service definitions.
+#  agent_cert: "(( inline ))"  # PEM-encoded agent certificate
+#  agent_key: "(( inline ))"  # PEM-encoded client key
+#  ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#  encrypt_keys: "(( inline ))"  # A list of passphrases that will be converted into encryption keys, the first key in the list is the active one
+#  server_cert: "(( inline ))"  # PEM-encoded server certificate
+#  server_key: "(( inline ))"  # PEM-encoded server key
+#databases:
+#  additional_config: "(( inline ))"  # A map of additional key/value pairs to include as extra configuration properties
+#  address: "(( inline ))"  # The database address
+#  collect_statement_statistics: false  # Enable the `pg_stat_statements` extension and collect statement execution statistics
+#  databases: "(( inline ))"  # A list of databases and associated properties to create
+#  db_scheme: "(( inline ))"  # The database scheme
+#  log_line_prefix: "%m: "  # The postgres `printf` style string that is output at the beginning of each log line
+#  max_connections: "(( inline ))"  # Maximum number of database connections
+#  port: "(( inline ))"  # The database port
+#  roles: "(( inline ))"  # A list of database roles and associated properties to create
+#dea_logging_agent:
+#  debug: false  # boolean value to turn on verbose mode
+#dea_next:
+#  advertise_interval_in_seconds: 5  # frequency of staging & DEA advertisments in seconds.
+#  allow_host_access: false  # Allows warden containers to access the DEA host via its IP
+#  allow_networks: "(( inline ))"  # "(( inline ))"
+#  ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#  client_cert: "(( inline ))"  # PEM-encoded server certificate
+#  client_key: "(( inline ))"  # PEM-encoded server key
+#  crash_lifetime_secs: 3600  # Crashed app lifetime in seconds
+#  default_health_check_timeout: 60  # Default timeout for application to start
+#  directory_server_protocol: https  # The protocol to use when communicating with the directory server ("http" or "https")
+#  disk_mb: 32000  # "(( inline ))"
+#  disk_overcommit_factor: 1  # "(( inline ))"
+#  dns_servers: "(( inline ))"  # List of nameservers to use in containers
+#  enable_ssl: true  # enable ssl for all communication with DEAs
+#  evacuation_bail_out_time_in_seconds: 115  # Duration to wait before shutting down, in seconds.
+#  heartbeat_interval_in_seconds: "(( inline ))"  # Heartbeat interval for DEAs
+#  instance_bandwidth_limit:
+#    burst: "(( inline ))"  # Network bandwidth burst limit for running instances in bytes
+#    rate: "(( inline ))"  # Network bandwidth limit for running instances in bytes per second
+#  instance_disk_inode_limit: 200000  # Limit on inodes for an instance container
+#  instance_max_cpu_share_limit: 256  # The maximum number of CPU shares that can be given to an app
+#  instance_memory_to_cpu_share_ratio: 8  # Controls the relationship between app memory and cpu shares. app_cpu_shares = app_memory / cpu_share_factor
+#  instance_min_cpu_share_limit: 1  # The minimum number of CPU shares that can be given to an app
+#  instance_nproc_limit: 512  # Limit on nproc for an instance container
+#  kernel_network_tuning_enabled: true  # with latest kernel version, no kernel network tunings allowed with in warden cpi containers
+#  logging_level: debug  # Log level for DEA.
+#  max_staging_duration: 900  # "(( inline ))"
+#  memory_mb: 8000  # "(( inline ))"
+#  memory_overcommit_factor: 1  # "(( inline ))"
+#  mtu: 1500  # Interface MTU size
+#  post_setup_hook: "(( inline ))"  # a single line of bash to prepend to the start command'
+#  rlimit_core: 0  # Maximum size of core file in bytes. 0 represents no core dump files can be created, and -1 represents no size limits.
+#  server_cert: "(( inline ))"  # PEM-encoded server certificate
+#  server_key: "(( inline ))"  # PEM-encoded server key
+#  ssl_port: 22443  # SSL port for DEA
+#  stacks:
+#  - name: cflinuxfs2
+#    package_path: "/var/vcap/packages/rootfs_cflinuxfs2/rootfs"
+#  staging_bandwidth_limit:
+#    burst: "(( inline ))"  # Network bandwidth burst limit for staging tasks in bytes
+#    rate: "(( inline ))"  # Network bandwidth limit for staging tasks in bytes per second
+#  staging_cpu_limit_shares: 512  # CPU limit in shares for staging tasks cgroup
+#  staging_disk_inode_limit: 200000  # Limit on inodes for a staging container
+#  staging_disk_limit_mb: 6144  # Disk limit in mb for staging tasks
+#  staging_memory_limit_mb: 1024  # Memory limit in mb for staging tasks
+#  streaming_timeout: 60  # "(( inline ))"
+#  zone: default  # The Availability Zone
+#description: ''  # "'description' attribute in the /v2/info endpoint"
+#diego:
+#  ssl:
+#    skip_cert_verify: false  # when connecting over https, ignore bad ssl certificates
+#disk_quota_enabled: true  # disk quota must be disabled to use warden-inside-warden with the warden cpi
+#domain: "(( inline ))"  # Deprecated in favor of system_domain. Domain where cloud_controller will listen (api.domain)
+#doppler:
+#  blacklisted_syslog_ranges: "(( inline ))"  # Blacklist for IPs that should not be used as syslog drains, e.g. internal ip addresses.
+#  container_metric_ttl_seconds: 120  # TTL (in seconds) for container usage metrics
+#  debug: false  # boolean value to turn on verbose logging for doppler system (dea agent & doppler server)
+#  dropsonde_incoming_port: 3457  # Port for incoming udp messages
+#  enabled: true  # Whether to expose the doppler_logging_endpoint listed at /v2/info
+#  etcd:
+#    client_cert: ''  # PEM-encoded client certificate
+#    client_key: ''  # PEM-encoded client key
+#  grpc_port: 8082  # Port for outgoing log messages via GRPC
+#  incoming_tcp_port: 3458  # Port for incoming tcp messages
+#  locked_memory_limit: unlimited  # Size (KB) of shell's locked memory limit. Set to 'kernel' to use the kernel's default. Non-numeric values other than 'kernel', 'soft', 'hard', and 'unlimited' will result in an error.
+#  maxRetainedLogMessages: 100  # number of log messages to retain per application
+#  message_drain_buffer_size: 10000  # Size of the internal buffer used by doppler to store messages for output to firehose or 'cf logs'. If the buffer gets full doppler will drop the messages.
+#  outgoing_port: 8081  # Port for outgoing doppler messages
+#  port: 443  # Port for doppler_logging_endpoint listed at /v2/info
+#  sink_dial_timeout_seconds: 1  # Dial timeout for sinks
+#  sink_inactivity_timeout_seconds: 3600  # Interval before removing a sink due to inactivity
+#  sink_io_timeout_seconds: 0  # I/O Timeout on sinks
+#  syslog_skip_cert_verify: true  # When connecting over TLS, don't verify certificates for syslog sink
+#  tls:
+#    enable: false  # Enable TLS listener on doppler so that it can receive dropsonde envelopes over TLS transport. If enabled, Cert and Key files must be specified.
+#    port: 3459  # Port for incoming messages in the dropsonde format over tls listener
+#    server_cert: ''  # TLS server certificate
+#    server_key: ''  # TLS server key
+#  unmarshaller_count: 5  # Number of parallel unmarshallers to run within Doppler
+#  use_ssl: true  # Whether to use ssl for the doppler_logging_endpoint listed at /v2/info
+#  websocket_write_timeout_seconds: 60  # Interval before a websocket write is aborted if it does not succeed
+#  zone: "(( inline ))"  # Zone of the doppler server
+#doppler_endpoint:
+#  shared_secret: "(( inline ))"  # Shared secret used to verify cryptographically signed dropsonde messages
+#env:
+#  http_proxy: "(( inline ))"  # The http_proxy across the VMs used for all requests over http
+#  https_proxy: "(( inline ))"  # The http_proxy across the VMs used for all requests over https
+#  no_proxy: "(( inline ))"  # Set No_Proxy across the VMs
+#etcd:
+#  advertise_urls_dns_suffix: "(( inline ))"  # DNS suffix for all nodes in the etcd cluster
+#  ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#  client_cert: "(( inline ))"  # PEM-encoded client certificate
+#  client_key: "(( inline ))"  # PEM-encoded client key
+#  cluster: "(( inline ))"  # Information about etcd cluster
+#  disable_network_diagnostics: false  # Disable network diagnostics for etcd
+#  dns_health_check_host: consul.service.cf.internal  # Host to ping for confirmation of DNS resolution
+#  election_timeout_in_milliseconds: 1000  # Time without receiving a heartbeat before peer should attempt to become leader in milliseconds. See https://coreos.com/docs/cluster-management/debugging/etcd-tuning
+#  heartbeat_interval_in_milliseconds: 50  # Interval between heartbeats in milliseconds. See https://coreos.com/docs/cluster-management/debugging/etcd-tuning
+#  machines: "(( inline ))"  # Addresses of etcd machines
+#  peer_ca_cert: "(( inline ))"  # PEM-encoded peer CA certificate
+#  peer_cert: "(( inline ))"  # PEM-encoded peer certificate
+#  peer_key: "(( inline ))"  # PEM-encoded peer key
+#  peer_require_ssl: true  # enable ssl between etcd peers
+#  require_ssl: true  # enable ssl for all communication with etcd
+#  server_cert: "(( inline ))"  # PEM-encoded server certificate
+#  server_key: "(( inline ))"  # PEM-encoded server key
+#etcd_metrics_server:
+#  etcd:
+#    ca_cert: ''  # PEM-encoded CA certificate
+#    client_cert: ''  # PEM-encoded client certificate
+#    client_key: ''  # PEM-encoded client key
+#    dns_suffix: "(( inline ))"  # |
+#    machine: 127.0.0.1  # |
+#    port: 4001  # port of etcd server to instrument
+#    require_ssl: false  # enable ssl for all communication with etcd
+#  status:
+#    password: ''  # basic auth password for metrics server (leave empty for generated)
+#    port: 5678  # listening port for metrics server
+#    username: ''  # basic auth username for metrics server (leave empty for generated)
+#ha_proxy:
+#  buffer_size_bytes: 16384  # Buffer size to use for requests, any requests larger than this (large cookies or query strings) will result in a gateway error
+#  disable_http: false  # Disable port 80 traffic
+#  dontlognull: false  # Whether to disable logging of requests with no traffic (usually load-balancer TCP checks)
+#  enable_stats_socket: false  # Whether to enable a socket that can be used to query errors and status
+#  log_to_file: false  # Whether to send logs to a file instead of the default syslog
+#  ssl_ciphers: ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-CBC-SHA256:ECDHE-RSA-AES256-CBC-SHA384:ECDHE-RSA-AES128-CBC-SHA:ECDHE-RSA-AES256-CBC-SHA:AES128-SHA256:AES128-SHA  # List of SSL Ciphers that are passed to HAProxy
+#  ssl_pem: "(( inline ))"  # SSL certificate (PEM file)
+#hm9000:
+#  ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#  client_cert: "(( inline ))"  # PEM-encoded client certificate
+#  client_key: "(( inline ))"  # PEM-encoded client key
+#  desired_state_batch_size: 5000  # The batch size when fetching desired state information from the CC.
+#  etcd:
+#    ca_cert: "(( inline ))"  # PEM-encoded CA certificate
+#    client_cert: "(( inline ))"  # PEM-encoded client certificate to communicate with ETCD
+#    client_key: "(( inline ))"  # PEM-encoded client key to communicate with ETCD
+#    machines: "(( inline ))"  # IPs pointing to the ETCD cluster
+#    require_ssl: false  # Require TLS for communication with ETCD
+#  fetcher_network_timeout_in_seconds: 30  # Each API call to the CC must succeed within this timeout.
+#  port: "(( inline ))"  # The port to serve API requests
+#  sender_message_limit: 60  # The maximum number of messages the sender should send per invocation.
+#  server_cert: "(( inline ))"  # PEM-encoded server certificate
+#  server_key: "(( inline ))"  # PEM-encoded server key
+#  url: "(( inline ))"  # URL of the hm9000 server
+#logger_endpoint:
+#  port: 443  # Port for logger endpoint listed at /v2/info
+#  use_ssl: true  # Whether to use ssl for logger endpoint listed at /v2/info
+#loggregator:
+#  etcd:
+#    ca_cert: ''  # PEM-encoded CA certificate
+#    machines: "(( inline ))"  # IPs pointing to the ETCD cluster
+#    maxconcurrentrequests: 10  # Number of concurrent requests to ETCD
+#    require_ssl: false  # Enable ssl for all communication with etcd
+#  outgoing_dropsonde_port: 8081  # Port for outgoing dropsonde messages
+#  tls:
+#    ca_cert: ''  # CA root required for key/cert verification
+#  uaa:
+#    client: doppler  # Doppler's client id to connect to UAA
+#    client_secret: ''  # Doppler's client secret to connect to UAA
+#  uaa_client_id: ''  # DEPRECATED in favor of loggregator.uaa.client.
+#login:
+#  analytics:
+#    code: "(( inline ))"  # Google analytics code. If Google Analytics is desired set both login.analytics.code and login.analytics.domain
+#    domain: "(( inline ))"  # Google analytics domain. If Google Analytics is desired set both login.analytics.code and login.analytics.domain
+#  asset_base_url: "/resources/oss"  # Deprecated in favor of branding properties. Base url for static assets, allows custom styling of the login server.  Use '/resources/pivotal' for Pivotal style.
+#  branding:
+#    company_name: "(( inline ))"  # This name is used on the UAA Pages and in account management related communication in UAA
+#    footer_legal_text: "(( inline ))"  # This text appears on the footer of all UAA pages
+#    footer_links: "(( inline ))"  # These links appear on the footer of all UAA pages. You may choose to add multiple urls for things like Support, Terms of Service etc.
+#    product_logo: "(( inline ))"  # This is a base64 encoded PNG image which will be used as the logo on all UAA pages like Login, Sign Up etc.
+#    square_logo: "(( inline ))"  # This is a base64 encoded PNG image which will be used as the favicon for the UAA pages
+#  enabled: true  # whether use login as the authorization endpoint or not
+#  home_redirect: "(( inline ))"  # URL for configuring a custom home page
+#  idpDiscoveryEnabled: false  # IDP Discovery should be set to true if you have configured more than one identity provider for UAA. The discovery relies on email domain being set for each additional provider
+#  links:
+#    passwd: "/forgot_password"  # URL for requesting password reset
+#    signup: "/create_account"  # URL for requesting to signup/register for an account
+#  links: "(( inline ))"  # A hash of home/passwd/signup URLS (see commented examples below)
+#  logout:
+#    redirect:
+#      parameter:
+#        disable: true  # When set to false, this allows an operator to leverage an open redirect on the UAA (/logout.do?redirect=google.com). No open redirect enabled
+#        whitelist: "(( inline ))"  # A list of URLs. When this list is non null, including empty, and disable=false, logout redirects are allowed, but limited to the whitelist URLs. If a redirect parameter value is not white listed, redirect will be to the default URL.
+#      url: "/login"  # The Location of the redirect header following a logout of the the UAA (/logout.do).
+#  messages: "(( inline ))"  # |
+#  notifications:
+#    url: "(( inline ))"  # The url for the notifications service (configure to use Notifications Service instead of SMTP server)
+#  oauth:
+#    providers: "(( inline ))"  # Contains a hash of OpenID Connect/Oauth Identity Providers, the key will be used as the origin key for that provider, followed by key/value pairs. Presence of the userInfoUrl will mark it as an OpenID provider instead of OAuth.
+#  prompt:
+#    password:
+#      text: Password  # The text used to prompt for a password during login
+#    username:
+#      text: Email  # The text used to prompt for a username during login
+#  protocol: https  # Scheme to use for HTTP communication (http/https)
+#  saml:
+#    entity_base_url: "(( inline ))"  # |
+#    entityid: "(( inline ))"  # |
+#    providers: "(( inline ))"  # Contains a hash of SAML Identity Providers, the key is the IDP Alias, followed by key/value pairs. To learn more about how to setup a saml identity provider go to https://simplesamlphp.org
+#    serviceProviderCertificate: "(( inline ))"  # Service provider certificate.
+#    serviceProviderKey: "(( inline ))"  # Private key for the service provider certificate.
+#    serviceProviderKeyPassword: "(( inline ))"  # Password to protect the service provider private key.
+#    signMetaData: true  # Global property to sign Local/SP metadata
+#    signRequest: true  # Global property to sign Local/SP requests
+#    signatureAlgorithm: "(( inline ))"  # Signature hashing algorithm for SAML. Can be SHA1, SHA256, or SHA512.
+#    socket:
+#      connectionManagerTimeout: 10000  # Timeout in milliseconds for connection pooling for SAML metadata HTTP requests
+#      soTimeout: 10000  # Read timeout in milliseconds for SAML metadata HTTP requests
+#    wantAssertionSigned: false  # Global property to request that external IDPs sign their SAML assertion before sending them to the UAA
+#  self_service_links_enabled: "(( inline ))"  # Enable self-service account creation and password resets links.
+#  smtp:
+#    auth: false  # If true, authenticate using AUTH command. https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html
+#    from_address: "(( inline ))"  # SMTP from address
+#    host: localhost  # SMTP server host address
+#    password: "(( inline ))"  # SMTP server password
+#    port: 2525  # SMTP server port
+#    starttls: false  # If true, send STARTTLS command before login to server. https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html
+#    user: "(( inline ))"  # SMTP server username
+#  smtp: "(( inline ))"  # SMTP server configuration, for password reset emails etc.
+#  url: "(( inline ))"  # |
+#metron:
+#  port: 3457  # The port used to emit dropsonde messages to the Metron agent.
+#metron_agent:
+#  buffer_size: 10000  # DEPRECATED
+#  debug: false  # boolean value to turn on verbose mode
+#  deployment: "(( inline ))"  # Name of deployment (added as tag on all outgoing metrics)
+#  dropsonde_incoming_port: 3457  # DEPRECATED - replaced by metron_agent.listening_port
+#  enable_buffer: false  # DEPRECATED
+#  etcd:
+#    client_cert: ''  # PEM-encoded client certificate
+#    client_key: ''  # PEM-encoded client key
+#  listening_address: 127.0.0.1  # Address the metron agent is listening on to receive dropsonde log messages provided for BOSH links and should not be overwritten
+#  listening_port: 3457  # Port the metron agent is listening on to receive dropsonde log messages
+#  logrotate:
+#    freq_min: 5  # The frequency in minutes which logrotate will rotate VM logs
+#    rotate: 7  # The number of files that logrotate will keep around on the VM
+#    size: 50M  # The size at which logrotate will decide to rotate the log file
+#  preferred_protocol: udp  # DEPRECATED - replaced with metron_agent.protocols
+#  protocols:
+#  - udp
+#  tcp:
+#    batching_buffer_bytes: 10240  # The number of bytes which can be buffered prior to TCP writes (applies to TLS over TCP)
+#    batching_buffer_flush_interval_milliseconds: 100  # The maximum time that a message can stay in the batching buffer before being flushed
+#  tls:
+#    client_cert: ''  # TLS client certificate
+#    client_key: ''  # TLS client key
+#  zone: "(( inline ))"  # Availability zone where this agent is running
+#metron_endpoint:
+#  dropsonde_port: 3457  # The port used to emit dropsonde messages to the Metron agent
+#  host: 127.0.0.1  # The host used to emit messages to the Metron agent
+#  port: 3457  # The port used to emit messages to the Metron agent
+#  shared_secret: "(( inline ))"  # Shared secret used to verify cryptographically signed dropsonde messages
+#name: ''  # "'name' attribute in the /v2/info endpoint"
+#nats:
+#  authorization_timeout: 15  # After accepting a connection, wait up to this many seconds for credentials.
+#  debug: false  # Enable debug logging output.
+#  machines: "(( inline ))"  # IPs of each NATS cluster member
+#  monitor_port: 0  # Port for varz and connz monitoring. 0 means disabled.
+#  password: "(( inline ))"  # Password for NATS authentication
+#  port: "(( inline ))"  # TCP port of NATS servers
+#  prof_port: 0  # Port for pprof. 0 means disabled.
+#  trace: false  # Enable trace logging output.
+#  user: "(( inline ))"  # User name for NATS authentication
+#nfs_server:
+#  address: "(( inline ))"  # NFS server for droplets and apps (not used in an AWS deploy, use s3 instead)
+#  allow_from_entries: "(( inline ))"  # An array of Hosts, Domains, Wildcard Domains, CIDR Networks and/or IPs from which /var/vcap/store is accessible
+#  idmapd_domain: localdomain  # Domain name for NFS idmapd
+#  nfsv4: "(( inline ))"  # bool to use NFS4 (not used in an AWS deploy, use s3 instead)
+#  no_root_squash: false  # Exports /var/vcap/store with no_root_squash when set to true
+#  pipefs_directory: "/var/lib/nfs/rpc_pipefs"  # Pipefs directory for NFS idmapd
+#  share: "(( inline ))"  # Path to share from the remote NFS server (not used in an AWS deploy, use s3 instead)
+#  share_path: "/var/vcap/nfs"  # Location to mount the nfs share
+#request_timeout_in_seconds: 900  # Server and client timeouts in seconds
+#route_registrar:
+#  routes: "(( inline ))"  # |
+#router:
+#  balancing_algorithm: round-robin  # Algorithm used to distribute requests for a route across backends. Supported values are round-robin and least-connection
+#  cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_AES_128_CBC_SHA:TLS_RSA_WITH_AES_256_CBC_SHA  # An ordered list of supported SSL cipher suites containing golang tls constants separated by colons The cipher suite will be chosen according to this order during SSL handshake
+#  debug_address: 0.0.0.0:17002  # Address at which to serve debug info
+#  dns_health_check_host: consul.service.cf.internal  # Host to ping for confirmation of DNS resolution, only used when Routing API is enabled
+#  drain_wait: 0  # |
+#  enable_access_log_streaming: false  # Enables streaming of access log to syslog.
+#  enable_proxy: false  # Enables support for the popular PROXY protocol, allowing downstream load balancers that do not support HTTP to pass along client information.
+#  enable_ssl: false  # Enable ssl termination on the router
+#  extra_headers_to_log: []  # An array of headers that access log events will be annotated with
+#  force_forwarded_proto_https: false  # Enables setting X-Forwarded-Proto header if SSL termination happened upstream and incorrectly set the header value. When this property is set to true gorouter sets the header X-Forwarded-Proto to https. When this value set to false, gorouter set the header X-Forwarded-Proto to the protocol of the incoming request
+#  healthcheck_user_agent: HTTP-Monitor/1.1  # User-Agent for the health check agent (usually the Load Balancer).
+#  load_balancer_healthy_threshold: 20  # Time period in seconds to wait until declaring the router instance started after starting the listener socket. This allows an external load balancer time to register the instance as healthy.
+#  logging_level: info  # Log level for router
+#  logrotate:
+#    freq_min: 5  # The frequency in minutes which logrotate will rotate VM logs
+#    rotate: 7  # The number of files that logrotate will keep around on the VM
+#    size: 2M  # The size at which logrotate will decide to rotate the log file
+#  number_of_cpus: -1  # Number of CPUs to utilize, the default (-1) will equal the number of available CPUs
+#  offset: 0  # "(( inline ))"
+#  port: 80  # Listening port for Router
+#  requested_route_registration_interval_in_seconds: 20  # On startup, the router will delay listening for requests by this duration to increase likelihood that it has a complete routing table before serving requests. The router also broadcasts the same duration as a recommended interval to registering clients via NATS.
+#  route_services_recommend_https: true  # Route Services are told where to send requests after processing using the X-CF-Forwarded-Url header. When this property is true, the scheme for this URL is https. When false, the scheme is http. As requests from Route Services to applications on CF transit load balancers and gorouter, disable this property for deployments that have TLS termination disabled.
+#  route_services_secret: ''  # Support for route services is disabled when no value is configured. A robust passphrase is recommended.
+#  route_services_secret_decrypt_only: ''  # To rotate keys, add your new key here and deploy. Then swap this key with the value of route_services_secret and deploy again.
+#  route_services_timeout: 60  # Expiry time of a route service signature in seconds
+#  secure_cookies: false  # Set secure flag on http cookies
+#  servers: []  # Array of router IPs
+#  ssl_cert: ''  # The public ssl cert for ssl termination
+#  ssl_key: ''  # The private ssl key for ssl termination
+#  ssl_skip_validation: false  # Skip SSL client cert validation
+#  status:
+#    password: "(( inline ))"  # Password for HTTP basic auth to the varz/status endpoint.
+#    port: 8080  # Port for the Router varz/status endpoint.
+#    user: "(( inline ))"  # Username for HTTP basic auth to the varz/status endpoint.
+#  suspend_pruning_if_nats_unavailable: false  # |
+#  trace_key: 22  # If the X-Vcap-Trace request header is set and has this value, trace headers are added to the response.
+#  tracing:
+#    enable_zipkin: false  # Enables the addition of the X-B3-Trace-Id header to incoming requests. If the header already exists on the incoming request, it will not be overwritten.
+#routing_api:
+#  auth_disabled: false  # When false, Routing API requires OAuth tokens for authentication.
+#  enabled: false  # When enabled, GoRouter will fetch HTTP routes from the Routing API in addition to routes obtained via NATS.
+#  port: 3000  # Port on which Routing API is running.
+#smoke_tests:
+#  api: "(( inline ))"  # The Elastic Runtime API endpoint URL
+#  apps_domain: "(( inline ))"  # The Elastic Runtime Application Domain
+#  backend: ''  # Defines the backend to be used. ('dea', 'diego', '' (default))
+#  cf_dial_timeout_in_seconds: "(( inline ))"  # Sets the cli timeout (CF_DIAL_TIMEOUT)
+#  enable_windows_tests: false  # Toggles a portion of the suite that exercises Windows platform support
+#  ginkgo_opts: ''  # Ginkgo options for the smoke tests
+#  logging_app: ''  # The Elastic Runtime app name to use when running logging tests
+#  org: "(( inline ))"  # The Elastic Runtime organization name to use when running tests
+#  password: "(( inline ))"  # The Elastic Runtime API user's password
+#  runtime_app: ''  # The Elastic Runtime app name to use when running runtime tests
+#  skip_ssl_validation: false  # Toggles cli verification of the Elastic Runtime API SSL certificate
+#  space: "(( inline ))"  # The Elastic Runtime space name to use when running tests
+#  suite_name: CF_SMOKE_TESTS  # A token used by the tests when creating Apps / Spaces
+#  use_existing_org: false  # Toggles setup and cleanup of the Elastic Runtime organization
+#  use_existing_space: false  # Toggles setup and cleanup of the Elastic Runtime space
+#  user: "(( inline ))"  # The Elastic Runtime API user
+#ssl:
+#  skip_cert_verify: false  # When connecting over https, ignore bad ssl certificates
+#statsd_injector:
+#  log_level: info  # The log level for the statsd injector
+#  metron_port: 3457  # The port on which metron is running
+#  statsd_port: 8125  # The port on which the injector should listen for statsd messages
+#support_address: ''  # "'support' attribute in the /v2/info endpoint"
+#syslog_daemon_config:
+#  address: "(( inline ))"  # IP address for syslog aggregator
+#  custom_rule: ''  # Custom rule for syslog forward daemon
+#  enable: true  # Enable or disable rsyslog configuration for forwarding syslog messages into metron
+#  fallback_addresses: []  # 'Addresses of fallback servers to be used if the primary syslog server is down. Only tcp or relp are supported. Each list entry should consist of "address", "transport" and "port" keys. '
+#  max_message_size: 4k  # maximum message size to be sent
+#  port: "(( inline ))"  # TCP port of syslog aggregator
+#  transport: tcp  # Transport to be used when forwarding logs (tcp|udp|relp).
+#syslog_drain_binder:
+#  debug: false  # Boolean value to turn on verbose logging for syslog_drain_binder
+#  drain_url_ttl_seconds: 60  # Time to live for drain urls in seconds
+#  etcd:
+#    client_cert: ''  # PEM-encoded client certificate
+#    client_key: ''  # PEM-encoded client key
+#  locked_memory_limit: unlimited  # Size (KB) of shell's locked memory limit. Set to 'kernel' to use the kernel's default. Non-numeric values other than 'kernel', 'soft', 'hard', and 'unlimited' will result in an error.
+#  polling_batch_size: 1000  # Batch size for the poll from cloud controller
+#  update_interval_seconds: 15  # Interval on which to poll cloud controller in seconds
+#system_domain: "(( inline ))"  # Domain reserved for CF operator, base URL where the login, uaa, and other non-user apps listen
+#system_domain_organization: ''  # An organization that will be created as part of the seeding process. When the system_domain is not shared with (in the list of) app_domains, this is required as the system_domain will be created as a PrivateDomain in this organization.
+#traffic_controller:
+#  debug: false  # boolean value to turn on verbose logging for loggregator system (dea agent & loggregator server)
+#  disable_access_control: false  # Traffic controller bypasses authentication with the UAA and CC
+#  etcd:
+#    client_cert: ''  # PEM-encoded client certificate
+#    client_key: ''  # PEM-encoded client key
+#  locked_memory_limit: unlimited  # Size (KB) of shell's locked memory limit. Set to 'kernel' to use the kernel's default. Non-numeric values other than 'kernel', 'soft', 'hard', and 'unlimited' will result in an error.
+#  outgoing_port: 8080  # DEPRECATED
+#  security_event_logging:
+#    enabled: false  # Enable logging of all requests made to the Traffic Controller in CEF format
+#uaa:
+#  admin:
+#    client_secret: "(( inline ))"  # Secret of the admin client - a client named admin with uaa.admin as an authority
+#  authentication:
+#    policy:
+#      countFailuresWithinSeconds: 1200  # Number of seconds in which lockoutAfterFailures failures must occur in order for account to be locked
+#      global:
+#        countFailuresWithinSeconds: 3600  # Number of seconds in which lockoutAfterFailures failures must occur in order for account to be locked
+#        lockoutAfterFailures: 5  # Number of allowed failures before account is locked
+#        lockoutPeriodSeconds: 300  # Number of seconds to lock out an account when lockoutAfterFailures failures is exceeded
+#      lockoutAfterFailures: 5  # Number of allowed failures before account is locked
+#      lockoutPeriodSeconds: 300  # Number of seconds to lock out an account when lockoutAfterFailures failures is exceeded
+#  ca_cert: ''  # Certificate authority for communication between clients and uaa.
+#  catalina_opts: "-Xmx768m -XX:MaxMetaspaceSize=256m"  # The options used to configure Tomcat
+#  cc:
+#    token_secret: "(( inline ))"  # Symmetric secret used to decode uaa tokens. Used for testing.
+#  clients:
+#    cc-service-dashboards:
+#      scope: openid,cloud_controller_service_permissions.read  # Used to grant scope for SSO clients for service brokers
+#      secret: "(( inline ))"  # Used for generating SSO clients for service brokers.
+#    cc_routing:
+#      secret: "(( inline ))"  # Used for fetching routing information from the Routing API
+#    cc_service_broker_client:
+#      scope: openid,cloud_controller_service_permissions.read  # "(DEPRECATED) - Used to grant scope for SSO clients for service brokers"
+#      secret: "(( inline ))"  # "(DEPRECATED) - Used for generating SSO clients for service brokers."
+#    cloud_controller_username_lookup:
+#      secret: "(( inline ))"  # Used for fetching usernames from UAA.
+#    doppler:
+#      secret: ''  # DEPRECATED in favor of loggregator.uaa.client_secret.
+#    gorouter:
+#      secret: "(( inline ))"  # Password for UAA client for the gorouter.
+#  clients: "(( inline ))"  # List of OAuth2 clients that the UAA will be bootstrapped with
+#  database:
+#    abandoned_timeout: 300  # Timeout in seconds for the longest running queries. Take into DB migrations for this timeout as they may run during a long period of time.
+#    case_insensitive: "(( inline ))"  # Set to true if you don't want to be using LOWER() SQL functions in search queries/filters, because you know that your DB is case insensitive. If this property is null, then it will be set to true if the UAA DB is MySQL and false otherwise, but even on MySQL you can override it by setting it explicitly to false
+#    log_abandoned: true  # Should connections that are forcibly closed be logged.
+#    max_connections: 100  # The max number of open connections to the DB from a running UAA instance
+#    max_idle_connections: 10  # The max number of open idle connections to the DB from a running UAA instance
+#    min_idle_connections: 0  # The min number of open idle connections to the DB from a running UAA instance
+#    remove_abandoned: false  # True if connections that are left open longer then abandoned_timeout seconds during a session(time between borrow and return from pool) should be forcibly closed
+#  disableInternalAuth: false  # Disables internal user authentication
+#  disableInternalUserManagement: false  # Disables UI and API for internal user management
+#  issuer: "(( inline ))"  # The url to use as the issuer URI
+#  jwt:
+#    claims:
+#      exclude: "(( inline ))"  # List of claims to exclude from the JWT-based OAuth2 tokens
+#    policy:
+#      accessTokenValiditySeconds: 43200  # The access token validity for the default zone if nothing is configured on the client. Will override global validity policies for the default zone only.
+#      active_key_id: "(( inline ))"  # The ID of the JWT signing key to be used when signing tokens.
+#      global:
+#        accessTokenValiditySeconds: 43200  # The global access token validity for all zones if nothing is configured on the client
+#        refreshTokenValiditySeconds: 2592000  # The global refresh token validity for all zones if nothing is configured on the client
+#      keys: "(( inline ))"  # Map of key IDs and signing keys, each defined with a property `signingKey`
+#      refreshTokenValiditySeconds: 2592000  # The refresh token validity for the default zone if nothing is configured on the client. Will override global validity policies for the default zone only.
+#    refresh:
+#      restrict_grant: false  # Disallows refresh-token grant for any client for which the user has not approved the `uaa.offline_token` scope
+#    revocable: false  # Set to true if you wish that even JWT tokens become individually revocable and stored in the UAA token storage. This setting applies to the default zone only.
+#    signing_key: "(( inline ))"  # Deprecated. Use uaa.jwt.policy.keys. The key used to sign the JWT-based OAuth2 tokens
+#    verification_key: "(( inline ))"  # Deprecated. Use uaa.jwt.policy.keys. The key used to verify JWT-based OAuth2 tokens
+#  ldap:
+#    add_shadow_user_on_login: true  # If set to false, only users pre-populated in the UAA user database will be allowed to authenticate via LDAP. If set to true, any user from LDAP will be allowed to authenticate and an internal user will be created if one does not yet exist.
+#    attributeMappings: "(( inline ))"  # Specifies how UAA user attributes map to LDAP attributes. given_name, family_name, and phone_number are UAA user attributes, while other attributes should be included using the prefix `user.attribute`
+#    emailDomain: "(( inline ))"  # Sets the whitelist of emails domains that the LDAP identity provider handles
+#    enabled: false  # Set to true to enable LDAP
+#    externalGroupsWhitelist: "(( inline ))"  # Whitelist of external groups from LDAP that get added as roles in the ID Token
+#    groups:
+#      groupRoleAttribute: spring.security.ldap.dn  # Used with groups-as-scopes, defines the attribute that holds the scope name(s).
+#      groupSearchFilter: member={0}  # Search query filter to find the groups a user belongs to, or for a nested search, groups that a group belongs to
+#      maxSearchDepth: '1'  # Set to number of levels a nested group search should go. Set to 1 to disable nested groups (default)
+#      profile_type: no-groups  # ''no-groups'', ''groups-as-scopes'', ''groups-map-to-scopes'''
+#      searchBase: ''  # Search start point for a user group membership search
+#      searchSubtree: 'true'  # Boolean value, set to true to search below the search base
+#    localPasswordCompare: 'true'  # Used with search-and-compare only. Set to true if passwords are retrieved by the search, and should be compared in the login server.
+#    mailAttributeName: mail  # The name of the LDAP attribute that contains the users email address
+#    mailSubstitute: ''  # Defines an email pattern containing a {0} to generate an email address for an LDAP user during authentication
+#    mailSubstituteOverridesLdap: false  # Set to true if you wish to override an LDAP user email address with a generated one
+#    passwordAttributeName: userPassword  # Used with search-and-compare only. The name of the password attribute in the LDAP directory
+#    passwordEncoder: org.cloudfoundry.identity.uaa.ldap.DynamicPasswordComparator  # Used with search-and-compare only. The encoder used to properly encode user password to match the one in the LDAP directory.
+#    profile_type: search-and-bind  # ''simple-bind'', ''search-and-bind'', ''search-and-compare'''
+#    referral: follow  # |
+#    searchBase: ''  # Used with search-and-bind and search-and-compare. Define a base where the search starts at.
+#    searchFilter: cn={0}  # Used with search-and-bind and search-and-compare. Search filter used. Takes one parameter, user ID defined as {0}
+#    ssl:
+#      skipverification: false  # Set to true, and LDAPS connection will not validate the server certificate.
+#      tls: none  # If using StartTLS, what mode to enable. Default is none, not enabled. Possible values are none, simple, external
+#    sslCertificate: "(( inline ))"  # Used with ldaps:// URLs. The certificate, if self signed, to be trusted by this connection.
+#    sslCertificateAlias: "(( inline ))"  # Used with ldaps:// URLs. The certificate alias, to be trusted by this connection and stored in the keystore.
+#    url: "(( inline ))"  # The URL to the ldap server, must start with ldap:// or ldaps://. Allows multiple servers to be specified, space separated
+#    userDN: "(( inline ))"  # 'Used with search-and-bind and search-and-compare. A valid LDAP ID that has read permissions to perform a search of the LDAP tree for user information. '
+#    userDNPattern: "(( inline ))"  # Used with simple-bind only. A semi-colon separated lists of DN patterns to construct a DN direct from the user ID without performing a search.
+#    userDNPatternDelimiter: ";"  # The delimiter character in between user DN patterns for simple-bind authentication
+#    userPassword: "(( inline ))"  # Used with search-and-bind and search-and-compare. Password for the LDAP ID that performs a search of the LDAP tree for user information.
+#  logging_level: DEBUG  # Set UAA logging level.  (e.g. TRACE, DEBUG, INFO)
+#  logging_use_rfc3339: false  # Sets the time format for log messages to be yyyy-MM-dd'T'HH:mm:ss.SSSXXX instead of yyyy-MM-dd HH:mm:ss.SSS
+#  login:
+#    client_secret: "(( inline ))"  # Default login client secret, if no login client is defined
+#  newrelic: "(( inline ))"  # |
+#  password:
+#    policy:
+#      expirePasswordInMonths: 0  # Number of months after which current password expires
+#      global:
+#        expirePasswordInMonths: 0  # Number of months after which current password expires
+#        maxLength: 255  # Maximum number of characters required for password to be considered valid
+#        minLength: 0  # Minimum number of characters required for password to be considered valid
+#        requireDigit: 0  # Minimum number of digits required for password to be considered valid
+#        requireLowerCaseCharacter: 0  # Minimum number of lowercase characters required for password to be considered valid
+#        requireSpecialCharacter: 0  # Minimum number of special characters required for password to be considered valid
+#        requireUpperCaseCharacter: 0  # Minimum number of uppercase characters required for password to be considered valid
+#      maxLength: 255  # Maximum number of characters required for password to be considered valid
+#      minLength: 0  # Minimum number of characters required for password to be considered valid
+#      requireDigit: 0  # Minimum number of digits required for password to be considered valid
+#      requireLowerCaseCharacter: 0  # Minimum number of lowercase characters required for password to be considered valid
+#      requireSpecialCharacter: 0  # Minimum number of special characters required for password to be considered valid
+#      requireUpperCaseCharacter: 0  # Minimum number of uppercase characters required for password to be considered valid
+#  port: 8080  # Port that uaa will accept connections on
+#  proxy:
+#    servers: []  # Array of the router IPs acting as the first group of HTTP/TCP backends. These will be added to the proxy_ips_regex as exact matches.
+#  proxy_ips_regex: 10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|169\.254\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.1[6-9]{1}\.\d{1,3}\.\d{1,3}|172\.2[0-9]{1}\.\d{1,3}\.\d{1,3}|172\.3[0-1]{1}\.\d{1,3}\.\d{1,3}  # |
+#  require_https: true  # Request came in on a secure connection. Expect the load balancer/proxy to set the proper headers (x-forwarded-for, x-forwarded-proto)
+#  scim:
+#    external_groups: "(( inline ))"  # |
+#    groups: "(( inline ))"  # |
+#    user:
+#      override: true  # If true override users defined in uaa.scim.users found in the database.
+#    userids_enabled: true  # Enables the endpoint `/ids/Users` that allows consumers to translate user ids to name
+#    users: "(( inline ))"  # |
+#  servlet:
+#    session-cookie: "(( inline ))"  # |
+#  ssl:
+#    port: 8443  # If this property Tomcat will listen to this port and expect https traffic. If null, tomcat will not listen to this port
+#    protocol_header: x-forwarded-proto  # The header to look for to determine if ssl termination was performed by a front end load balancer.
+#  sslCertificate: ''  # The server's ssl certificate. The default is a self-signed certificate and should always be replaced for production deployments
+#  sslPrivateKey: ''  # The server's ssl private key. Only passphrase-less keys are supported
+#  url: "(( inline ))"  # The base url of the UAA
+#  user:
+#    authorities:
+#    - openid
+#    - scim.me
+#    - cloud_controller.read
+#    - cloud_controller.write
+#    - cloud_controller_service_permissions.read
+#    - password.write
+#    - uaa.user
+#    - approvals.me
+#    - oauth.approvals
+#    - notification_preferences.read
+#    - notification_preferences.write
+#    - profile
+#    - roles
+#    - user_attributes
+#    - uaa.offline_token
+#  zones:
+#    internal:
+#      hostnames: "(( inline ))"  # |
+#uaadb:
+#  address: "(( inline ))"  # The UAA database IP address
+#  databases: "(( inline ))"  # The list of databases used in UAA database including tag/name
+#  db_scheme: "(( inline ))"  # Database scheme for UAA DB
+#  port: "(( inline ))"  # The UAA database Port
+#  roles: "(( inline ))"  # The list of database Roles used in UAA database including tag/name/password
+#version: 0  # "'version' attribute in the /v2/info endpoint"
