@@ -69,6 +69,7 @@
 #  max_upload_size: 5000m  # Max allowed file size for upload
 #  nginx_workers_per_core: 2  # Number of NGINX worker processes per CPU core
 #  port: 8080  # TCP port on which the blobstore server (nginx) listens
+#  release_level_backup: false  # toggle to enable backups of the blobstore with bbr
 #  secure_link:
 #    secret: "(( inline ))"  # The secret used for signing URLs. Must not contain $, or any other variables that are used by and cannot be escaped in the Nginx config.
 #  tls:
@@ -104,6 +105,8 @@
 #      client_session_cache_size: "(( inline ))"  # capacity of the tls client cache
 #      max_idle_conns_per_host: "(( inline ))"  # maximum number of idle http connections
 #      require_ssl: true  # enable ssl for all communication with the bbs
+#    bulker:
+#      enabled: true  # Run the Nsync bulker process. Set to false if cc.diego.temporary_local_sync is enabled
 #    bulker_debug_addr: 127.0.0.1:17007  # address at which to serve debug info
 #    cc:
 #      base_url: "(( inline ))"  # base URL of the cloud controller
@@ -120,6 +123,7 @@
 #    lifecycle_bundles:
 #    - buildpack/cflinuxfs2:buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
 #    - buildpack/windows2012R2:windows_app_lifecycle/windows_app_lifecycle.tgz
+#    - buildpack/windows2016:buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
 #    - docker:docker_app_lifecycle/docker_app_lifecycle.tgz
 #    listen_addr: 0.0.0.0:8787  # Address from which nsync serves requests
 #    listener_debug_addr: 127.0.0.1:17006  # address at which to serve debug info
@@ -149,6 +153,7 @@
 #    lifecycle_bundles:
 #    - buildpack/cflinuxfs2:buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
 #    - buildpack/windows2012R2:windows_app_lifecycle/windows_app_lifecycle.tgz
+#    - buildpack/windows2016:buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
 #    - docker:docker_app_lifecycle/docker_app_lifecycle.tgz
 #    listen_addr: 0.0.0.0:8888  # Address from which the Stager serves requests
 #    log_level: info  # Log level
@@ -186,9 +191,7 @@
 #  allow_app_ssh_access: true  # Allow users to change the value of the app-level allow_ssh attribute
 #  allowed_cors_domains: []  # List of domains (including scheme) from which Cross-Origin requests will be accepted, a * can be used as a wildcard for any part of a domain
 #  app_bits_max_body_size: 1536M  # Maximum body size for nginx bits uploads
-#  app_bits_upload_grace_period_in_seconds: 1200  # Extra token expiry time while uploading big apps.
-#  app_events:
-#    cutoff_age_in_days: 31  # How old an app event should stay in cloud controller database before being cleaned up
+#  app_bits_upload_grace_period_in_seconds: 1200  # Extra token expiry time while uploading big apps
 #  app_usage_events:
 #    cutoff_age_in_days: 31  # How old an app usage event should stay in cloud controller database before being cleaned up
 #  audit_events:
@@ -220,22 +223,20 @@
 #      username: ''  # The basic auth user that CC uses to connect to the admin endpoint on webdav
 #  bulk_api_password: "(( inline ))"  # Password used to access the bulk_api, health_manager uses it to connect to the cc, announced over NATS
 #  bulk_api_user: bulk_api  # User used to access the bulk_api, health_manager uses it to connect to the cc, announced over NATS
-#  cc_partition: default  # Deprecated. Defines a 'partition' for the health_manager job
-#  client_max_body_size: 1536M  # Maximum body size for nginx
+#  client_max_body_size: 15M  # Maximum body size for nginx
 #  completed_tasks:
 #    cutoff_age_in_days: 31  # How long a completed task will stay in cloud controller database before being cleaned up based on last updated time with success or failure.
 #  core_file_pattern: "/var/vcap/sys/cores/core-%e-%s-%p-%t"  # Filename template for core dump files. Use an empty string if you don't want core files saved.
 #  db_encryption_key: ''  # key for encrypting sensitive values in the CC database
 #  db_logging_level: debug2  # Log level for cc database operations
-#  dea_use_https: false  # enable ssl for communication with DEAs
 #  default_app_disk_in_mb: 1024  # The default disk space an app gets
 #  default_app_memory: 1024  # How much memory given to an app if not specified
 #  default_app_ssh_access: true  # When ssh is allowed and not explicitly set in the application, new applications will start with ssh service enabled
 #  default_health_check_timeout: 60  # Default health check timeout (in seconds) that can be set for the app
-#  default_quota_definition: default  # Local to use a local (NFS) file system.  AWS to use AWS.
-#  default_running_security_groups: "(( inline ))"  # The default running security groups that will be seeded in CloudController.
+#  default_quota_definition: default  # The name of the quota definition CC will fallback on for org and space limits from the list of quota definitions.
+#  default_running_security_groups: "(( inline ))"  # security groups are only seeded on the first deploy, after which they should be managed via the API'
 #  default_stack: cflinuxfs2  # The default stack to use if no custom stack is specified by an app.
-#  default_staging_security_groups: "(( inline ))"  # The default staging security groups that will be seeded in CloudController.
+#  default_staging_security_groups: "(( inline ))"  # security groups are only seeded on the first deploy, after which they should be managed via the API'
 #  development_mode: false  # Enable development features for monitoring and insight
 #  diego:
 #    bbs:
@@ -248,6 +249,7 @@
 #    lifecycle_bundles:
 #      buildpack/cflinuxfs2: buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
 #      buildpack/windows2012R2: windows_app_lifecycle/windows_app_lifecycle.tgz
+#      buildpack/windows2016: buildpack_app_lifecycle/buildpack_app_lifecycle.tgz
 #      docker: docker_app_lifecycle/docker_app_lifecycle.tgz
 #    nsync_url: http://nsync.service.cf.internal:8787  # URL of the Diego nsync service
 #    pid_limit: 1024  # Maximum pid limit for containerized work running user-provided code
@@ -291,28 +293,20 @@
 #  external_protocol: https  # The protocol used to access the CC API from an external entity
 #  failed_jobs:
 #    cutoff_age_in_days: 31  # How old a failed job should stay in cloud controller database before being cleaned up
-#  feature_disabled_message: "(( inline ))"  # Custom message to use for a disabled feature.
-#  flapping_crash_count_threshold: 3  # The threshold of crashes after which the app is marked as flapping
 #  info:
 #    custom: "(( inline ))"  # Custom attribute keys and values for /v2/info endpoint
-#  install_buildpacks: "(( inline ))"  # Set of buildpacks to install during deploy
+#  install_buildpacks: []  # Set of buildpacks to install during deploy
 #  instance_file_descriptor_limit: 16384  # The file descriptors made available to each app instance
 #  internal_api_password: "(( inline ))"  # Password used by Diego to access internal endpoints
 #  internal_api_user: internal_user  # User name used by Diego to access internal endpoints
 #  internal_service_hostname: cloud-controller-ng.service.cf.internal  # Internal hostname used to resolve the address of the Cloud Controller
 #  jobs:
-#    app_bits_packer:
-#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
 #    app_usage_events_cleanup:
 #      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
 #    blobstore_delete:
 #      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
-#    blobstore_upload:
-#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
 #    diego_sync:
 #      timeout_in_seconds: 600  # The longest the diego sync job can take before another is enqueued
-#    droplet_deletion:
-#      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
 #    droplet_upload:
 #      timeout_in_seconds: "(( inline ))"  # The longest this job can take before it is cancelled
 #    generic:
@@ -329,7 +323,6 @@
 #  maximum_health_check_timeout: 180  # Maximum health check timeout (in seconds) that can be set for the app
 #  min_cli_version: "(( inline ))"  # Minimum version of the CF CLI to work with the API.
 #  min_recommended_cli_version: "(( inline ))"  # Minimum recommended version of the CF CLI.
-#  minimum_candidate_stagers: 5  # Minimum number of candidate deas for staging.  Defaults to 5, should be fewer than the total DEAs in the deployment.
 #  mutual_tls:
 #    ca_cert: "(( inline ))"  # PEM-encoded CA certificate for secure, mutually authenticated TLS communication
 #    private_key: "(( inline ))"  # PEM-encoded key for secure, mutually authenticated TLS communication
@@ -377,8 +370,7 @@
 #  pending_droplets:
 #    frequency_in_seconds: 300  # How often the pending droplets cleanup job runs
 #  perform_blob_cleanup: true  # Whether or not to perform the blob cleanup job
-#  placement_top_stager_percentage: 10  # The percentage of top stagers considered when choosing a stager
-#  quota_definitions: "(( inline ))"  # Hash of default quota definitions. Overriden by custom quota definitions.
+#  quota_definitions: "(( inline ))"  # Hash of default quota definitions to be seeded. This property can be used to add quotas with subsequent deploys, but not to update existing ones.
 #  rate_limiter:
 #    enabled: false  # Enable rate limiting for UAA-authenticated endpoints per user or client
 #    general_limit: 2000  # The number of requests a user or client is allowed to make for all endpoints that do not have a custom limit over the configured interval
@@ -410,7 +402,7 @@
 #  run_prestart_migrations: true  # Run Cloud Controller DB migrations in BOSH pre-start script. Should be changed to false for deployments where the PostgreSQL job is deployed to the same VM as Cloud Controller. Otherwise, the default of true is preferable.
 #  security_event_logging:
 #    enabled: false  # Enable logging of all requests made to the Cloud Controller in CEF format.
-#  security_group_definitions: "(( inline ))"  # Array of security groups that will be seeded into CloudController.
+#  security_group_definitions: "(( inline ))"  # security groups are only seeded on the first deploy, after which they should be managed via the API'
 #  server_keepalive_timeout: 75  # Configure keep alive timeout for connections to cloud controller. This is a temporary field used for testing.
 #  service_usage_events:
 #    cutoff_age_in_days: 31  # How old a service usage event should stay in cloud controller database before being cleaned up
@@ -431,6 +423,7 @@
 #  - doppler
 #  - loggregator
 #  - hm9000
+#  - credhub
 #  thresholds:
 #    api:
 #      alert_if_above_mb: 3500  # The cc will alert if memory remains above this threshold for 3 monit cycles
@@ -456,6 +449,8 @@
 #  port: "(( inline ))"  # The port of the database server
 #  roles: "(( inline ))"  # Users to create on the database when seeding
 #  ssl_verify_hostname: true  # Verify that the database SSL certificate matches the host to which the connection is attempted
+#cloud_controller:
+#  release_level_backup: false  # Include cloud_controller jobs in backup and restore operations
 #collector:
 #  aws:
 #    access_key_id: "(( inline ))"  # AWS access key for CloudWatch access
@@ -513,6 +508,9 @@
 #  encrypt_keys: "(( inline ))"  # A list of passphrases that will be converted into encryption keys, the first key in the list is the active one
 #  server_cert: "(( inline ))"  # PEM-encoded server certificate
 #  server_key: "(( inline ))"  # PEM-encoded server key
+#credhub_api:
+#  ca_cert: "(( inline ))"  # The certificate authority being used by CredHub
+#  hostname: credhub.service.cf.internal  # Hostname used to resolve the address of CredHub
 #databases:
 #  additional_config: "(( inline ))"  # A map of additional key/value pairs to include as extra configuration properties
 #  collect_statement_statistics: false  # Enable the `pg_stat_statements` extension and collect statement execution statistics
@@ -528,22 +526,18 @@
 #    private_key: ''  # PEM-encoded key for secure TLS communication
 #dea_next:
 #  advertise_interval_in_seconds: 5  # Advertise interval for DEAs
-#  ca_cert: "(( inline ))"  # PEM-encoded CA certificate
-#  client_cert: "(( inline ))"  # PEM-encoded server certificate
-#  client_key: "(( inline ))"  # PEM-encoded server key
-#  staging_disk_limit_mb: 6144  # Disk limit in mb for staging tasks
+#  staging_disk_limit_mb: 4096  # Disk limit in mb for staging tasks
 #  staging_memory_limit_mb: 1024  # Memory limit in mb for staging tasks
 #description: ''  # "'description' attribute in the /v2/info endpoint"
 #diego:
 #  ssl:
 #    skip_cert_verify: false  # when connecting over https, ignore bad ssl certificates
-#domain: "(( inline ))"  # Deprecated in favor of system_domain. Domain where cloud_controller will listen (api.domain)
+#domain: "(( inline ))"  # The system domain.  The public server will listen on host ''blobstore.system-domain.tld'''
 #doppler:
 #  addr: doppler.service.cf.internal  # DNS name for doppler. This needs to be round robbin DNS if you want metron to communicate with multiple dopplers.
 #  blacklisted_syslog_ranges: "(( inline ))"  # Blacklist for IPs that should not be used as syslog drains, e.g. internal ip addresses.
 #  container_metric_ttl_seconds: 120  # TTL (in seconds) for container usage metrics
 #  disable_announce: false  # Disable doppler announcing via etcd
-#  dropsonde_incoming_port: 3457  # Port for incoming udp messages
 #  etcd:
 #    client_cert: ''  # PEM-encoded client certificate
 #    client_key: ''  # PEM-encoded client key
@@ -565,8 +559,6 @@
 #  websocket_host: 0.0.0.0  # Host for websocket server
 #  websocket_write_timeout_seconds: 60  # Interval before a websocket write is aborted if it does not succeed
 #  zone: ''  # Zone of the doppler server
-#doppler_endpoint:
-#  shared_secret: "(( inline ))"  # Shared secret used to verify cryptographically signed dropsonde messages
 #env:
 #  http_proxy: "(( inline ))"  # The http_proxy across the VMs used for all requests over http
 #  https_proxy: "(( inline ))"  # The http_proxy across the VMs used for all requests over https
@@ -608,14 +600,13 @@
 #ha_proxy:
 #  buffer_size_bytes: 16384  # Buffer size to use for requests, any requests larger than this (large cookies or query strings) will result in a gateway error
 #  disable_http: false  # Disable port 80 traffic
+#  disable_tls_10: true  # Disable TLS 1.0 in HA Proxy
+#  disable_tls_11: true  # Disable TLS 1.1 in HA Proxy
 #  dontlognull: false  # Whether to disable logging of requests with no traffic (usually load-balancer TCP checks)
 #  enable_stats_socket: false  # Whether to enable a socket that can be used to query errors and status
 #  log_to_file: false  # Whether to send logs to a file instead of the default syslog
 #  ssl_ciphers: DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384  # List of SSL Ciphers that are passed to HAProxy
 #  ssl_pem: "(( inline ))"  # SSL certificate (PEM file)
-#hm9000:
-#  port: 5155  # Port of the hm9000 Api Server
-#  url: "(( inline ))"  # URL of the hm9000 server
 #http_port: 9090  # Port by which clients will communicate with the cc uploader using http
 #https_port: 9091  # Port by which clients will communicate with the cc uploader using https (mutual TLS)
 #internal_hostname: cc-uploader.service.cf.internal  # Hostname by which clients will communicate with the cc uploader
@@ -660,6 +651,12 @@
 #    domain: "(( inline ))"  # Google analytics domain. If Google Analytics is desired set both login.analytics.code and login.analytics.domain
 #  asset_base_url: "/resources/oss"  # Deprecated in favor of branding properties. Base url for static assets, allows custom styling of the login server.  Use '/resources/pivotal' for Pivotal style.
 #  branding:
+#    banner:
+#      backgroundColor: "(( inline ))"  # This is the color to be used for the background of the banner area on the UAA discovery login page
+#      link: "(( inline ))"  # This is the link to be used for the banner logo or banner text on the UAA discovery login page
+#      logo: "(( inline ))"  # This is a base64 encoded PNG image which will be used as the banner on the UAA discovery login page
+#      text: "(( inline ))"  # This is text that will be used in the banner area on the UAA discovery login page if no banner logo is configured
+#      textColor: "(( inline ))"  # This is the color to be used for banner text if banner text is defined to be used on the UAA discovery login page
 #    company_name: "(( inline ))"  # This name is used on the UAA Pages and in account management related communication in UAA
 #    footer_legal_text: "(( inline ))"  # This text appears on the footer of all UAA pages
 #    footer_links: "(( inline ))"  # These links appear on the footer of all UAA pages. You may choose to add multiple urls for things like Support, Terms of Service etc.
@@ -732,10 +729,6 @@
 #  health_port: 14824  # The port for the health endpoint
 #  listening_address: 127.0.0.1  # Address the metron agent is listening on to receive dropsonde log messages provided for BOSH links and should not be overwritten
 #  listening_port: 3457  # Port the metron agent is listening on to receive dropsonde log messages
-#  logrotate:
-#    freq_min: 5  # The frequency in minutes which logrotate will rotate VM logs
-#    rotate: 7  # The number of files that logrotate will keep around on the VM
-#    size: 50M  # The size at which logrotate will decide to rotate the log file
 #  pprof_port: 0  # The pprof port for runtime profiling data
 #  tags: {}  # Collection of tags to add on all outgoing v2 envelopes. Bosh deployment, job, index and IP will be merged with this property if they are not provided
 #  zone: ''  # Availability zone where this agent is running
@@ -764,13 +757,21 @@
 #  pipefs_directory: "/var/lib/nfs/rpc_pipefs"  # Pipefs directory for NFS idmapd
 #  share: "(( inline ))"  # Path to share from the remote NFS server (not used in an AWS deploy, use s3 instead)
 #  share_path: "/var/vcap/nfs"  # Location to mount the nfs share
+#perm:
+#  enabled: false  # Enable CF Permissions external service. Requires perm link to take effect
 #request_timeout_in_seconds: 900  # Server and client timeouts in seconds
 #route_registrar:
 #  routes: "(( inline ))"  # |
 #router:
+#  backends:
+#    cert_chain: "(( inline ))"  # Certificate chain used for client authentication to TLS-registered backends.  In PEM format.
+#    max_conns: 0  # Maximum concurrent TCP connections per backend. When set to 0 there is no limit
+#    private_key: "(( inline ))"  # Private key used for client authentication to TLS-registered backends.  In PEM format.
 #  balancing_algorithm: round-robin  # Algorithm used to distribute requests for a route across backends. Supported values are round-robin and least-connection
-#  cipher_suites: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384  # An ordered list of golang supported standard SSL cipher suites containing golang tls constants (https://github.com/golang/go/blob/release-branch.go1.7/src/crypto/tls/cipher_suites.go#L269-L285) separated by colons. The cipher suite will be chosen according to this order during SSL handshake
+#  ca_certs: "(( inline ))"  # String of concatenated certificate authorities in PEM format, used to validate certificates provided by remote systems. By default, Gorouter will trust certificates signed by well-known CAs and by CA certificates installed on the filesystem.
+#  cipher_suites: ECDHE-RSA-AES128-GCM-SHA256:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384  # An ordered, colon-delimited list of golang supported TLS cipher suites in OpenSSL or RFC format. The selected cipher suite will be negotiated according to the order of this list during a TLS handshake. See https://github.com/golang/go/blob/release-branch.go1.8/src/crypto/tls/cipher_suites.go#L369-L390 for golang supported cipher suites. The first four of these are supported for TLSv1.0/1.1 only. See https://www.openssl.org/docs/man1.1.0/apps/ciphers.html for a mapping of OpenSSL and RFC suite names.
 #  debug_address: 127.0.0.1:17002  # Address at which to serve debug info
+#  disable_http: false  # Disables the http listener on port specified by router.port. This cannot be set to true if enable_ssl is false.
 #  dns_health_check_host: consul.service.cf.internal  # Host to ping for confirmation of DNS resolution, only used when Routing API is enabled
 #  drain_wait: 20  # |
 #  enable_access_log_streaming: false  # Enables streaming of access log to syslog.
@@ -778,6 +779,8 @@
 #  enable_ssl: false  # When enabled, Gorouter will listen on port 443 and terminate TLS for requests received on this port.
 #  extra_headers_to_log: []  # An array of headers that access log events will be annotated with
 #  force_forwarded_proto_https: false  # Enables setting X-Forwarded-Proto header if SSL termination happened upstream and incorrectly set the header value. When this property is set to true gorouter sets the header X-Forwarded-Proto to https. When this value set to false, gorouter set the header X-Forwarded-Proto to the protocol of the incoming request
+#  forwarded_client_cert: always_forward  # |
+#  frontend_idle_timeout: 900  # |
 #  healthcheck_user_agent: HTTP-Monitor/1.1  # DEPRECATED. Use /health endpoint on port specified by status.port. User-Agent for the health check agent (usually the Load Balancer).
 #  isolation_segments: []  # Routes with these isolation segments will be registered. Used in combination with routing_table_sharding_mode.
 #  load_balancer_healthy_threshold: 20  # Time period in seconds to wait until declaring the router instance started after starting the listener socket. This allows an external load balancer time to register the instance as healthy.
@@ -787,6 +790,7 @@
 #    rotate: 7  # The number of files that logrotate will keep around on the VM
 #    size: 2M  # The size at which logrotate will decide to rotate the log file
 #  max_idle_connections: 0  # Maximum total idle keepalive connections to backends. When 0, support for keepalive connections is disabled. Maximum idle connections per backend is 100.
+#  min_tls_version: TLSv1.2  # Minimum accepted version of TLS protocol. All versions above this will also be accepted. Valid values are TLSv1.0, TLSv1.1, and TLSv1.2.
 #  number_of_cpus: -1  # Number of CPUs to utilize, the default (-1) will equal the number of available CPUs
 #  offset: 0  # "(( inline ))"
 #  port: 80  # Listening port for Router
@@ -798,14 +802,13 @@
 #  routing_table_sharding_mode: all  # |
 #  secure_cookies: false  # Set secure flag on http cookies
 #  servers: "(( inline ))"  # Array of router IPs
-#  ssl_cert: ''  # The public ssl cert for ssl termination
-#  ssl_key: ''  # The private ssl key for ssl termination
 #  ssl_skip_validation: false  # Skip validation of TLS certificates received from route services and UAA
 #  status:
 #    password: "(( inline ))"  # Password for HTTP basic auth to the /varz and /routes endpoints.
 #    port: 8080  # Port for the /health, /varz, and /routes endpoints.
 #    user: router-status  # Username for HTTP basic auth to the /varz and /routes endpoints.
 #  suspend_pruning_if_nats_unavailable: false  # |
+#  tls_pem: "(( inline ))"  # Array of private keys and certificates used for TLS handshakes with downstream clients. Each element in the array is an object containing fields 'private_key' and 'cert_chain', each of which supports a PEM block. Required if router.enable_ssl is true.
 #  trace_key: 22  # If the X-Vcap-Trace request header is set and has this value, trace headers are added to the response.
 #  tracing:
 #    enable_zipkin: false  # Enables the addition of the X-B3-Trace-Id header to incoming requests. If the header already exists on the incoming request, it will not be overwritten.
@@ -865,7 +868,7 @@
 #    client_cert: ''  # PEM-encoded client certificate
 #    client_key: ''  # PEM-encoded client key
 #  health_addr: localhost:14825  # The host:port to expose health metrics for trafficcontroller
-#  locked_memory_limit: unlimited  # Size (KB) of shell's locked memory limit. Set to 'kernel' to use the kernel's default. Non-numeric values other than 'kernel', 'soft', 'hard', and 'unlimited' will result in an error.
+#  locked_memory_limit: unlimited  # |
 #  pprof_port: 0  # The pprof port for runtime profiling data
 #  security_event_logging:
 #    enabled: false  # Enable logging of all requests made to the Traffic Controller in CEF format
@@ -885,6 +888,24 @@
 #  catalina_opts: "-Xmx768m -XX:MaxMetaspaceSize=256m"  # The options used to configure Tomcat
 #  cc:
 #    token_secret: "(( inline ))"  # Symmetric secret used to decode uaa tokens. Used for testing.
+#  client:
+#    secret:
+#      policy:
+#        global:
+#          maxLength: "(( inline ))"  # Maximum number of characters required for secret to be considered valid (defaults to 255).
+#          minLength: "(( inline ))"  # Minimum number of characters required for secret to be considered valid (defaults to 0).
+#          requireDigit: "(( inline ))"  # Minimum number of digits required for secret to be considered valid (defaults to 0).
+#          requireLowerCaseCharacter: "(( inline ))"  # Minimum number of lowercase characters required for secret to be considered valid (defaults to 0).
+#          requireSpecialCharacter: "(( inline ))"  # Minimum number of special characters required for secret to be considered valid (defaults to 0).
+#          requireUpperCaseCharacter: "(( inline ))"  # Minimum number of uppercase characters required for secret to be considered valid (defaults to 0).
+#        global: "(( inline ))"  # The global client secret policy for clients in a zone. If the zone doesn't have a client secret policy, this one will be used.
+#        maxLength: "(( inline ))"  # Maximum number of characters required for secret to be considered valid (defaults to 255).
+#        minLength: "(( inline ))"  # Minimum number of characters required for secret to be considered valid (defaults to 0).
+#        requireDigit: "(( inline ))"  # Minimum number of digits required for secret to be considered valid (defaults to 0).
+#        requireLowerCaseCharacter: "(( inline ))"  # Minimum number of lowercase characters required for secret to be considered valid (defaults to 0).
+#        requireSpecialCharacter: "(( inline ))"  # Minimum number of special characters required for secret to be considered valid (defaults to 0).
+#        requireUpperCaseCharacter: "(( inline ))"  # Minimum number of uppercase characters required for secret to be considered valid (defaults to 0).
+#      policy: "(( inline ))"  # The client secret policy for clients in the default zone.
 #  clients:
 #    cc-service-dashboards:
 #      scope: openid,cloud_controller_service_permissions.read  # Used to grant scope for SSO clients for service brokers
@@ -894,8 +915,10 @@
 #    cc_service_broker_client:
 #      scope: openid,cloud_controller_service_permissions.read  # "(DEPRECATED) - Used to grant scope for SSO clients for service brokers"
 #      secret: "(( inline ))"  # "(DEPRECATED) - Used for generating SSO clients for service brokers."
+#    cc_service_key_client:
+#      secret: "(( inline ))"  # Used for fetching service key values from CredHub
 #    cloud_controller_username_lookup:
-#      secret: "(( inline ))"  # Used for fetching usernames from UAA.
+#      secret: "(( inline ))"  # Used for fetching usernames from UAA
 #    gorouter:
 #      secret: "(( inline ))"  # Password for UAA client for the gorouter.
 #  clients: "(( inline ))"  # List of OAuth2 clients that the UAA will be bootstrapped with

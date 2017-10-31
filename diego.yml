@@ -44,9 +44,11 @@
 #    db_port: ''  # Port for SQL backend
 #    db_schema: ''  # Database name to use for connecting to SQL backend
 #    db_username: ''  # Username to use for connecting to SQL backend
+#bpm:
+#  enabled: false  # use the BOSH Process Manager to manage the ssh-proxy process.'
 #connect_to_instance_address: false  # Connect directly to container IP instead of to the host IP and external port. Suitable only for deployments in which the gorouters and TCP routers can route directly to the container IP of instances.
 #container_proxy:
-#  enabled: false  # Enable envoy proxy on garden containers'
+#  enabled: false  # Enable envoy proxy on garden containers. Requires valid TLS credentials in diego.executor.instance_identity_ca_cert and diego.executor.instance_identity_key.'
 #database:
 #  max_open_connections: 200  # maximum number of open connections to the database
 #diego:
@@ -293,6 +295,8 @@
 #  ssl:
 #    skip_cert_verify: false  # when connecting over https, ignore bad ssl certificates
 #dropsonde_port: 3457  # local metron agent's port
+#enable_consul_service_registration: true  # Enable the ssh-proxy to register itself as a service with Consul, for client discovery via Consul DNS. Do not disable without arranging alternate service discovery.
+#enable_container_proxy_tests: false  # When set, enables the container proxy tests in vizzini'
 #enable_declarative_healthcheck: false  # When set, enables the declarative check tests in vizzini'
 #loggregator:
 #  ca_cert: "(( inline ))"  # CA Cert used to communicate with local metron agent over gRPC
