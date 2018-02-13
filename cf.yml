@@ -69,7 +69,6 @@
 #  max_upload_size: 5000m  # Max allowed file size for upload
 #  nginx_workers_per_core: 2  # Number of NGINX worker processes per CPU core
 #  port: 8080  # TCP port on which the blobstore server (nginx) listens
-#  release_level_backup: false  # toggle to enable backups of the blobstore with bbr
 #  secure_link:
 #    secret: "(( inline ))"  # The secret used for signing URLs. Must not contain $, or any other variables that are used by and cannot be escaped in the Nginx config.
 #  tls:
@@ -77,7 +76,7 @@
 #    port: 4443  # The TCP port on which the internal blobstore server listens
 #    private_key: "(( inline ))"  # The PEM-encoded private key for signing TLS/SSL traffic
 #bpm:
-#  enabled: false  # Enable Bosh Process Manager
+#  enabled: false  # Enable Bosh Process Manager'
 #build: ''  # "'build' attribute in the /v2/info endpoint"
 #capi:
 #  cc_uploader:
@@ -197,6 +196,7 @@
 #  audit_events:
 #    cutoff_age_in_days: 31  # How old an audit event should stay in cloud controller database before being cleaned up
 #  bits_service:
+#    ca_cert: ''  # The ca cert to use when communicating with bits-service endpoints
 #    enabled: false  # Enable integration of the bits-service incubator (experimental)
 #    password: ''  # Password for the bits-service
 #    private_endpoint: ''  # Private url for the bits-service service
@@ -227,8 +227,13 @@
 #  completed_tasks:
 #    cutoff_age_in_days: 31  # How long a completed task will stay in cloud controller database before being cleaned up based on last updated time with success or failure.
 #  core_file_pattern: "/var/vcap/sys/cores/core-%e-%s-%p-%t"  # Filename template for core dump files. Use an empty string if you don't want core files saved.
+#  credential_references:
+#    interpolate_service_bindings: true  # Controls whether CredHub credentials are automatically interpolated in VCAP_SERVICES
+#  database_encryption:
+#    current_key_label: ''  # current key label for encrypting values in the CC database
+#    keys: {}  # label-key pairs for encrypting sensitive values in the CC database, labels must be < 256 characters long
 #  db_encryption_key: ''  # key for encrypting sensitive values in the CC database
-#  db_logging_level: debug2  # Log level for cc database operations
+#  db_logging_level: debug2  # Level at which cc database operations will be logged if cc.log_db_queries is set to true.
 #  default_app_disk_in_mb: 1024  # The default disk space an app gets
 #  default_app_memory: 1024  # How much memory given to an app if not specified
 #  default_app_ssh_access: true  # When ssh is allowed and not explicitly set in the application, new applications will start with ssh service enabled
@@ -254,13 +259,13 @@
 #    nsync_url: http://nsync.service.cf.internal:8787  # URL of the Diego nsync service
 #    pid_limit: 1024  # Maximum pid limit for containerized work running user-provided code
 #    stager_url: http://stager.service.cf.internal:8888  # URL of the Diego stager service
-#    temporary_cc_uploader_mtls: false  # Temporary flag to ensure droplet upload callback endpoints require mTLS
-#    temporary_droplet_download_mtls: false  # Temporary flag to enable mTLS droplet download to the bbs from cc
-#    temporary_local_apps: false  # Temporary flag to manage app state directly to the bbs from cc
-#    temporary_local_staging: false  # Temporary flag to enable staging directly to the bbs from cc
-#    temporary_local_sync: false  # Temporary flag to run sync job between cc and bbs
-#    temporary_local_tasks: false  # Temporary flag to run tasks directly to the bbs from cc
-#    temporary_local_tps: false  # Temporary flag to manage app state directly to the bbs from cc
+#    temporary_cc_uploader_mtls: true  # Temporary flag to ensure droplet upload callback endpoints require mTLS
+#    temporary_droplet_download_mtls: true  # Temporary flag to enable mTLS droplet download to the bbs from cc
+#    temporary_local_apps: true  # Temporary flag to manage app state directly to the bbs from cc
+#    temporary_local_staging: true  # Temporary flag to enable staging directly to the bbs from cc
+#    temporary_local_sync: true  # Temporary flag to run sync job between cc and bbs
+#    temporary_local_tasks: true  # Temporary flag to run tasks directly to the bbs from cc
+#    temporary_local_tps: true  # Temporary flag to manage app state directly to the bbs from cc
 #    temporary_oci_buildpack_mode: "(( inline ))"  # ''oci-phase-1'''
 #    tps_url: http://tps.service.cf.internal:1518  # URL of the Diego tps service
 #    use_privileged_containers_for_running: false  # Whether or not to use privileged containers for running buildpack apps and tasks.
@@ -315,7 +320,8 @@
 #      timeout_in_seconds: 14400  # The longest any job can take before it is cancelled unless overriden per job
 #    local:
 #      number_of_workers: 2  # Number of local cloud_controller_worker workers
-#  logging_level: info  # Log level for cc
+#  log_db_queries: false  # Setting this to true with cc.db_logging_level >= cc.logging_level will log all field values, including encrypted secrets.'
+#  logging_level: info  # https://github.com/cloudfoundry/steno#log-levels.'
 #  logging_max_retries: 1  # Passthru value for Steno logger
 #  loggregator:
 #    internal_url: http://loggregator-trafficcontroller.service.cf.internal:8081  # Internal url used to communicate with traffic_controller
@@ -370,7 +376,13 @@
 #  pending_droplets:
 #    frequency_in_seconds: 300  # How often the pending droplets cleanup job runs
 #  perform_blob_cleanup: true  # Whether or not to perform the blob cleanup job
-#  quota_definitions: "(( inline ))"  # Hash of default quota definitions to be seeded. This property can be used to add quotas with subsequent deploys, but not to update existing ones.
+#  quota_definitions:
+#    default:
+#      memory_limit: 102400
+#      non_basic_services_allowed: true
+#      total_reserved_route_ports: 100
+#      total_routes: 1000
+#      total_services: -1
 #  rate_limiter:
 #    enabled: false  # Enable rate limiting for UAA-authenticated endpoints per user or client
 #    general_limit: 2000  # The number of requests a user or client is allowed to make for all endpoints that do not have a custom limit over the configured interval
@@ -412,8 +424,8 @@
 #    description: Cloud Foundry Linux-based filesystem
 #  staging_file_descriptor_limit: 16384  # File descriptor limit for staging tasks
 #  staging_timeout_in_seconds: 900  # Timeout for staging a droplet
-#  staging_upload_password: ''  # User's password used to access internal endpoints of Cloud Controller to upload files when staging
-#  staging_upload_user: ''  # User name used to access internal endpoints of Cloud Controller to upload files when staging
+#  staging_upload_password: "(( inline ))"  # User's password used to access internal endpoints of Cloud Controller to upload files when staging
+#  staging_upload_user: "(( inline ))"  # User name used to access internal endpoints of Cloud Controller to upload files when staging
 #  statsd_host: 127.0.0.1  # The host for the statsd server, defaults to the local metron agent
 #  statsd_port: 8125  # The port for the statsd server, defaults to the local metron agent
 #  system_hostnames:
@@ -437,7 +449,6 @@
 #  uaa:
 #    internal_url: uaa.service.cf.internal  # The internal url used by UAA
 #  uaa_resource_id: cloud_controller,cloud_controller_service_permissions  # Name of service to register to UAA
-#  users_can_select_backend: true  # Allow non-admin users to switch their apps between DEA and Diego backends
 #  volume_services_enabled: false  # Enable binding to services that provide volume_mount information.
 #ccdb:
 #  address: "(( inline ))"  # The address of the database server
@@ -449,8 +460,6 @@
 #  port: "(( inline ))"  # The port of the database server
 #  roles: "(( inline ))"  # Users to create on the database when seeding
 #  ssl_verify_hostname: true  # Verify that the database SSL certificate matches the host to which the connection is attempted
-#cloud_controller:
-#  release_level_backup: false  # Include cloud_controller jobs in backup and restore operations
 #collector:
 #  aws:
 #    access_key_id: "(( inline ))"  # AWS access key for CloudWatch access
@@ -478,6 +487,8 @@
 #  use_datadog: false  # enable Datadog plugin
 #  use_graphite: false  # enable Graphite plugin
 #  use_tsdb: false  # enable OpenTsdb plugin
+#confab:
+#  timeout_in_seconds: 60  # Timeout used by Confab when starting up. Minimum is 60 seconds
 #consul:
 #  agent:
 #    datacenter: dc1  # Name of the agent's datacenter.
@@ -489,6 +500,7 @@
 #    log_level: info  # Agent log level.
 #    mode: client  # Mode to run the agent in. (client or server)
 #    node_name: "(( inline ))"  # Node name for the agent. (Defaults to the BOSH instance group name)
+#    node_name_includes_id: false  # whether to include the unique spec.id in the node name
 #    ports:
 #      dns: 53  # DNS server port
 #    protocol_version: 2  # The Consul protocol to use.
@@ -510,20 +522,23 @@
 #  server_key: "(( inline ))"  # PEM-encoded server key
 #credhub_api:
 #  ca_cert: "(( inline ))"  # The certificate authority being used by CredHub
+#  external_url: "(( inline ))"  # The external address of CredHub to expose at the '/' endpoint
 #  hostname: credhub.service.cf.internal  # Hostname used to resolve the address of CredHub
 #databases:
 #  additional_config: "(( inline ))"  # A map of additional key/value pairs to include as extra configuration properties
 #  collect_statement_statistics: false  # Enable the `pg_stat_statements` extension and collect statement execution statistics
 #  databases: "(( inline ))"  # A list of databases and associated properties to create
 #  log_line_prefix: "%m: "  # The postgres `printf` style string that is output at the beginning of each log line
-#  max_connections: "(( inline ))"  # Maximum number of database connections
+#  max_connections: 500  # Maximum number of database connections
 #  monit_timeout: 90  # Monit timout in seconds for the postgres job start. If not specified, no timeout statement will be added so that the global monit timeout applies.
-#  port: "(( inline ))"  # The database port
+#  port: 5432  # The database port
 #  roles: "(( inline ))"  # A list of database roles and associated properties to create
+#  skip_data_copy_in_minor: false  # If false, during a PostgreSQL minor upgrade a copy of the data directory is created.
 #  tls:
 #    ca: ''  # PEM-encoded certification authority for secure TLS communication
 #    certificate: ''  # PEM-encoded certificate for secure TLS communication
 #    private_key: ''  # PEM-encoded key for secure TLS communication
+#  trust_local_connections: true  # Whether to trust or not local connections. Note that vcap is always trusted.
 #dea_next:
 #  advertise_interval_in_seconds: 5  # Advertise interval for DEAs
 #  staging_disk_limit_mb: 4096  # Disk limit in mb for staging tasks
@@ -677,10 +692,12 @@
 #  logout:
 #    redirect:
 #      parameter:
-#        disable: true  # When set to false, this allows an operator to leverage an open redirect on the UAA (/logout.do?redirect=google.com). No open redirect enabled
-#        whitelist: "(( inline ))"  # A list of URLs. When this list is non null, including empty, and disable=false, logout redirects are allowed, but limited to the whitelist URLs. If a redirect parameter value is not white listed, redirect will be to the default URL.
-#      url: "/login"  # The Location of the redirect header following a logout of the the UAA (/logout.do).
+#        disable: false  # Deprecated as of v52/uaa-4.7.0. Value ignored. Value is always false. Will be removed in the future.
+#        whitelist: "(( inline ))"  # A list of URLs that are accepted and honored as values to the `/logout.do?redirect` parameter . If a redirect parameter value is not white listed, redirect will be to the default URL, /login or to the value of uaa.login.logout.redirect.url if set.
+#      url: "/login"  # The Location of the redirect header following a logout of the the UAA (/login).
 #  messages: "(( inline ))"  # |
+#  mfa:
+#    providers: "(( inline ))"  # A list of providers and their configuration. Provider names must be alphanumeric. Currently only `google-authenticator` is supported with no additional attributes. Issuer is optional.
 #  notifications:
 #    url: "(( inline ))"  # The url for the notifications service (configure to use Notifications Service instead of SMTP server)
 #  oauth:
@@ -693,6 +710,7 @@
 #  protocol: https  # Scheme to use for HTTP communication (http/https)
 #  saml:
 #    activeKeyId: "(( inline ))"  # |
+#    disableInResponseToCheck: false  # |
 #    entity_base_url: "(( inline ))"  # |
 #    entityid: "(( inline ))"  # |
 #    keys: "(( inline ))"  # |
@@ -758,21 +776,28 @@
 #  share: "(( inline ))"  # Path to share from the remote NFS server (not used in an AWS deploy, use s3 instead)
 #  share_path: "/var/vcap/nfs"  # Location to mount the nfs share
 #perm:
+#  ca_certs: []  # An array of certificate authorities being used by Perm. Allows multiple in case of rotation.
 #  enabled: false  # Enable CF Permissions external service. Requires perm link to take effect
+#  hostname: perm.service.cf.internal  # Hostname used to resolve the address of Perm
+#  query_enabled: false  # Enable querying of the CF Permissions external service.
+#  timeout_in_milliseconds: 100  # Timeout for Perm requests in milliseconds.
+#release_level_backup: false  # Set to true to include UAA database in backup and restore operations
 #request_timeout_in_seconds: 900  # Server and client timeouts in seconds
 #route_registrar:
 #  routes: "(( inline ))"  # |
 #router:
 #  backends:
 #    cert_chain: "(( inline ))"  # Certificate chain used for client authentication to TLS-registered backends.  In PEM format.
+#    enable_tls: false  # "(optional, boolean) By default, Gorouter forwards requests to backends over unencrypted connections and will ignore routes registered with a TLS port, preferring a non-tls port when both are present. When this property is set to true, Gorouter will connect to backends using TLS when routes are registered with a TLS port, ignoring non-tls ports when both are present."
 #    max_conns: 0  # Maximum concurrent TCP connections per backend. When set to 0 there is no limit
 #    private_key: "(( inline ))"  # Private key used for client authentication to TLS-registered backends.  In PEM format.
 #  balancing_algorithm: round-robin  # Algorithm used to distribute requests for a route across backends. Supported values are round-robin and least-connection
 #  ca_certs: "(( inline ))"  # String of concatenated certificate authorities in PEM format, used to validate certificates provided by remote systems. By default, Gorouter will trust certificates signed by well-known CAs and by CA certificates installed on the filesystem.
-#  cipher_suites: ECDHE-RSA-AES128-GCM-SHA256:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384  # An ordered, colon-delimited list of golang supported TLS cipher suites in OpenSSL or RFC format. The selected cipher suite will be negotiated according to the order of this list during a TLS handshake. See https://github.com/golang/go/blob/release-branch.go1.8/src/crypto/tls/cipher_suites.go#L369-L390 for golang supported cipher suites. The first four of these are supported for TLSv1.0/1.1 only. See https://www.openssl.org/docs/man1.1.0/apps/ciphers.html for a mapping of OpenSSL and RFC suite names.
+#  cipher_suites: ECDHE-RSA-AES128-GCM-SHA256:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384  # An ordered, colon-delimited list of golang supported TLS cipher suites in OpenSSL or RFC format. The selected cipher suite will be negotiated according to the order of this list during a TLS handshake. See https://github.com/golang/go/blob/release-branch.go1.9/src/crypto/tls/cipher_suites.go#L369-L390 for golang supported cipher suites. The first four of these are supported for TLSv1.0/1.1 only. See https://www.openssl.org/docs/man1.1.0/apps/ciphers.html for a mapping of OpenSSL and RFC suite names.
+#  client_cert_validation: request  # |
 #  debug_address: 127.0.0.1:17002  # Address at which to serve debug info
 #  disable_http: false  # Disables the http listener on port specified by router.port. This cannot be set to true if enable_ssl is false.
-#  dns_health_check_host: consul.service.cf.internal  # Host to ping for confirmation of DNS resolution, only used when Routing API is enabled
+#  dns_health_check_host: uaa.service.cf.internal  # Host to ping for confirmation of DNS resolution, only used when Routing API is enabled
 #  drain_wait: 20  # |
 #  enable_access_log_streaming: false  # Enables streaming of access log to syslog.
 #  enable_proxy: false  # Enables support for the popular PROXY protocol, allowing downstream load balancers that do not support HTTP to pass along client information.
@@ -785,10 +810,6 @@
 #  isolation_segments: []  # Routes with these isolation segments will be registered. Used in combination with routing_table_sharding_mode.
 #  load_balancer_healthy_threshold: 20  # Time period in seconds to wait until declaring the router instance started after starting the listener socket. This allows an external load balancer time to register the instance as healthy.
 #  logging_level: info  # Log level for router
-#  logrotate:
-#    freq_min: 5  # The frequency in minutes which logrotate will rotate VM logs
-#    rotate: 7  # The number of files that logrotate will keep around on the VM
-#    size: 2M  # The size at which logrotate will decide to rotate the log file
 #  max_idle_connections: 0  # Maximum total idle keepalive connections to backends. When 0, support for keepalive connections is disabled. Maximum idle connections per backend is 100.
 #  min_tls_version: TLSv1.2  # Minimum accepted version of TLS protocol. All versions above this will also be accepted. Valid values are TLSv1.0, TLSv1.1, and TLSv1.2.
 #  number_of_cpus: -1  # Number of CPUs to utilize, the default (-1) will equal the number of available CPUs
@@ -812,6 +833,7 @@
 #  trace_key: 22  # If the X-Vcap-Trace request header is set and has this value, trace headers are added to the response.
 #  tracing:
 #    enable_zipkin: false  # Enables the addition of the X-B3-Trace-Id header to incoming requests. If the header already exists on the incoming request, it will not be overwritten.
+#  write_access_logs_locally: true  # Enables writing access log to local disk.
 #routing_api:
 #  auth_disabled: false  # When false, Routing API requires OAuth tokens for authentication.
 #  enabled: false  # When enabled, GoRouter will fetch HTTP routes from the Routing API in addition to routes obtained via NATS.
@@ -951,7 +973,7 @@
 #    refresh:
 #      format: jwt  # The format for the refresh token. Allowed values are `jwt`, `opaque`
 #      restrict_grant: false  # Disallows refresh-token grant for any client for which the user has not approved the `uaa.offline_token` scope
-#      unique: false  # If true, uaa will only issue one refresh token per client_id/user_id combination
+#      unique: false  # only applies if `uaa.jwt.revocable` is true.'
 #    revocable: false  # Set to true if you wish that even JWT tokens become individually revocable and stored in the UAA token storage. This setting applies to the default zone only.
 #    signing_key: "(( inline ))"  # Deprecated. Use uaa.jwt.policy.keys. The key used to sign the JWT-based OAuth2 tokens.
 #    verification_key: "(( inline ))"  # Deprecated. The key used to verify JWT-based OAuth2 tokens. If you are specifying your signing key(s) under uaa.jwt.policy.keys, the verification key does not need to be specified.
@@ -982,13 +1004,31 @@
 #      skipverification: false  # Set to true, and LDAPS connection will not validate the server certificate.
 #      tls: none  # If using StartTLS, what mode to enable. Default is none, not enabled. Possible values are none, simple
 #    sslCertificate: "(( inline ))"  # Used with ldaps:// URLs. The certificate, if self signed, to be trusted by this connection.
-#    sslCertificateAlias: "(( inline ))"  # Used with ldaps:// URLs. The certificate alias, to be trusted by this connection and stored in the keystore.
 #    storeCustomAttributes: true  # Stores custom attribute mappings from the attributeMappings configuration in the database so that they can be retrieved using the /userinfo endpoint
 #    url: "(( inline ))"  # The URL to the ldap server, must start with ldap:// or ldaps://. Allows multiple servers to be specified, space separated
 #    userDN: "(( inline ))"  # 'Used with search-and-bind and search-and-compare. A valid LDAP ID that has read permissions to perform a search of the LDAP tree for user information. '
 #    userDNPattern: "(( inline ))"  # Used with simple-bind only. A semi-colon separated lists of DN patterns to construct a DN direct from the user ID without performing a search.
 #    userDNPatternDelimiter: ";"  # The delimiter character in between user DN patterns for simple-bind authentication
 #    userPassword: "(( inline ))"  # Used with search-and-bind and search-and-compare. Password for the LDAP ID that performs a search of the LDAP tree for user information.
+#  limitedFunctionality:
+#    statusFile: "/var/vcap/data/uaa/bbr_limited_mode.lock"  # |
+#    whitelist:
+#      endpoints:
+#      - "/oauth/authorize/**"
+#      - "/oauth/token/**"
+#      - "/check_token/**"
+#      - "/login/**"
+#      - "/login.do"
+#      - "/logout/**"
+#      - "/logout.do"
+#      - "/saml/**"
+#      - "/autologin/**"
+#      - "/authenticate/**"
+#      - "/idp_discovery/**"
+#      methods:
+#      - GET
+#      - HEAD
+#      - OPTIONS
 #  logging_level: DEBUG  # Set UAA logging level.  (e.g. TRACE, DEBUG, INFO)
 #  logging_use_rfc3339: false  # Sets the time format for log messages to be yyyy-MM-dd'T'HH:mm:ss.SSSXXX instead of yyyy-MM-dd HH:mm:ss.SSS
 #  newrelic: "(( inline ))"  # |
@@ -1022,7 +1062,10 @@
 #    userids_enabled: true  # Enables the endpoint `/ids/Users` that allows consumers to translate user ids to name
 #    users: "(( inline ))"  # |
 #  servlet:
+#    idle-timeout: 1800  # |
 #    session-cookie: "(( inline ))"  # |
+#  shutdown:
+#    sleep: 5000  # |
 #  ssl:
 #    port: 8443  # If this property Tomcat will listen to this port and expect https traffic. If set to -1, Tomcat will not listen for https traffic.
 #    protocol_header: x-forwarded-proto  # The header to look for to determine if ssl termination was performed by a front end load balancer.
@@ -1051,10 +1094,12 @@
 #    internal:
 #      hostnames: "(( inline ))"  # |
 #uaadb:
-#  address: "(( inline ))"  # The UAA database IP address
-#  databases: "(( inline ))"  # The list of databases used in UAA database including tag/name
+#  address: "(( inline ))"  # |
+#  databases: "(( inline ))"  # |
 #  db_scheme: "(( inline ))"  # Database scheme for UAA DB
 #  port: "(( inline ))"  # The UAA database Port
-#  roles: "(( inline ))"  # The list of database Roles used in UAA database including tag/name/password
+#  roles: "(( inline ))"  # |
+#  skip_ssl_validation: false  # Skip TLS veriication for database server certificate
 #  tls_enabled: false  # Use TLS connection for UAA database
+#  tls_protocols: "(( inline ))"  # |
 #version: 0  # "'version' attribute in the /v2/info endpoint"

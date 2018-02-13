@@ -1,10 +1,12 @@
 #---
+#admin_api:
+#  require_tls: false  # Whether to require mutual TLS for communication to the rep's administrative API. Requires `tls.ca_cert`, `tls.cert`, and `tls.key` to be configured.
 #benchmark-bbs:
 #  active_key_label: "(( inline ))"  # the active key for encryption
-#  aws_access_key_id: ''  # the aws access key for uploading metrics to s3
+#  aws_access_key_id: ''  # the AWS access key for uploading metrics to s3
 #  aws_bucket_name: ''  # the S3 bucket to upload metrics to
 #  aws_region: ''  # the aws region where the S3 bucket lives
-#  aws_secret_access_key: ''  # the aws secret key for uploading metrics to s3
+#  aws_secret_access_key: ''  # the AWS secret key for uploading metrics to s3
 #  bbs:
 #    api_location: bbs.service.cf.internal:8889  # the address of the BBS
 #    ca_cert: "(( inline ))"  # PEM-encoded CA certificate
@@ -14,7 +16,7 @@
 #      max_idle_conns_per_host: "(( inline ))"  # maximum number of etcd client idle http connections
 #    require_ssl: true  # enable ssl for all communication with the bbs (false unsupported)
 #  client_timeout: "(( inline ))"  # the http timeout for bbs client requests in seconds (golang duration formatted string)
-#  datadog_api_key: ''  # the api key for emmitting datadog metrics
+#  datadog_api_key: ''  # the API key for emmitting datadog metrics
 #  datadog_app_key: ''  # the application key for datadog metrics
 #  datadog_metric_prefix: ''  # the datadog metric prefix
 #  desired_lrps: "(( inline ))"  # the number of single instance desired lrps to generate and fetch
@@ -47,10 +49,15 @@
 #bpm:
 #  enabled: false  # use the BOSH Process Manager to manage the ssh-proxy process.'
 #connect_to_instance_address: false  # Connect directly to container IP instead of to the host IP and external port. Suitable only for deployments in which the gorouters and TCP routers can route directly to the container IP of instances.
-#container_proxy:
-#  enabled: false  # Enable envoy proxy on garden containers. Requires valid TLS credentials in diego.executor.instance_identity_ca_cert and diego.executor.instance_identity_key.'
+#containers:
+#  graceful_shutdown_interval_in_seconds: 10  # time in seconds between signalling a container to shutdown gracefully and stopping it forcefully. Should not be less than 10.'
+#  proxy:
+#    additional_memory_allocation_mb: 5  # Additional memory allocated to each container for the envoy proxy. This must not be negative. Currently doesn''t work on windows cells but left here for compatability with the linux Rep'
+#    enabled: false  # Enable envoy proxy on garden containers. Currently doesn''t work on windows cells but left here for compatability with the linux Rep'
+#  trusted_ca_certificates: "(( inline ))"  # List of PEM-encoded CA certificates to make available inside containers in a conventional location. List entries may be individual or concatenated CAs.
 #database:
 #  max_open_connections: 200  # maximum number of open connections to the database
+#declarative_healthcheck_path: "/var/vcap/packages/healthcheck_windows/external"  # The directory containing the declarative healthcheck binary'
 #diego:
 #  auctioneer:
 #    bbs:
@@ -140,9 +147,9 @@
 #      require_ssl: false  # Whether to require SSL for BBS communication to the SQL backend
 #  cfdot:
 #    bbs:
-#      ca_cert: "(( inline ))"  # PEM-encoded CA certificate
-#      client_cert: "(( inline ))"  # PEM-encoded client certificate
-#      client_key: "(( inline ))"  # PEM-encoded client key
+#      ca_cert: "(( inline ))"  # Use tls.ca_certificate instead'
+#      client_cert: "(( inline ))"  # Use tls.certificate instead'
+#      client_key: "(( inline ))"  # Use tls.private_key instead'
 #      use_ssl: true  # true if the bbs requires TLS connections, false otherwise
 #  executor:
 #    auto_disk_capacity_overhead_mb: 0  # the amount of overhead that should be subtracted from the container disk capacity, this only applies when disk_capacity_mb is set to auto
@@ -181,6 +188,8 @@
 #    read_work_pool_size: 64  # Maximum number of concurrent get container info operations.
 #    unhealthy_monitoring_interval_in_seconds: 2  # Interval to check unhealthy containers in seconds.
 #    volman:
+#      csi_mount_root_dir: "/var/vcap/data/csimountroot"  # A OS style path string containing the directory under which volman will mount CSI volumes'
+#      csi_paths: "/var/vcap/data/csiplugins"  # or ; depending on the OS)'
 #      driver_paths: "/var/vcap/data/voldrivers"  # or ; depending on the OS)'
 #  file_server:
 #    debug_addr: 127.0.0.1:17005  # address at which to serve debug info
@@ -229,6 +238,7 @@
 #    locket:
 #      api_location: "(( inline ))"  # Hostname and port of the locket server
 #    log_level: info  # Log level
+#    open_bindmounts_acl: false  # Add more permissive ACLs to directories that are bind mounted into containers. Required for Windows 2016 cells
 #    optional_placement_tags: []  # Array of optional tags used for scheduling Tasks and LRPs
 #    placement_tags: []  # Array of tags used for scheduling Tasks and LRPs
 #    polling_interval_in_seconds: 30  # The interval to look for completed tasks and LRPs in seconds
@@ -238,9 +248,9 @@
 #    rootfs_providers: []  # Array of schemes for which the underlying garden can support arbitrary root filesystems
 #    server_cert: "(( inline ))"  # PEM-encoded server certificate
 #    server_key: "(( inline ))"  # PEM-encoded server key
-#    trusted_certs: "(( inline ))"  # Concatenation of trusted CA certificates to be made available on the cell.
+#    trusted_certs: "(( inline ))"  # Concatenation of trusted CA certificates to be made available on the cell. Deprecated in favor of containers.trusted_ca_certificates
 #    use_azure_fault_domains: false  # Use Azure Fault-Domains to determine the value of the zone. The value of the zone will be z<FD-index>. e.g. z0, z1, etc.
-#    zone: "(( inline ))"  # The zone associated with the rep
+#    zone: "(( inline ))"  # The zone associated with the rep. This will override the BOSH-provided spec.az property if present.
 #  route_emitter:
 #    bbs:
 #      api_location: bbs.service.cf.internal:8889  # Address to the BBS Server
@@ -276,7 +286,7 @@
 #      require_ssl: true  # enable ssl for all communication with the bbs
 #    cc:
 #      external_port: 9022  # External port of the Cloud Controller API
-#      internal_service_hostname: cloud-controller-ng.service.cf.internal  # Internal service hostname of Cloud Controller Api
+#      internal_service_hostname: cloud-controller-ng.service.cf.internal  # Internal service hostname of Cloud Controller API
 #    debug_addr: 127.0.0.1:17016  # address at which to serve debug info
 #    diego_credentials: "(( inline ))"  # Diego Credentials to be used with the Diego authenitcation method
 #    dropsonde_port: 3457  # local metron agent's port
@@ -284,6 +294,7 @@
 #    enable_diego_auth: false  # Allow ssh access for diego applications
 #    healthcheck_listen_addr: 0.0.0.0:2223  # address for the ssh proxy healthcheck server
 #    host_key: "(( inline ))"  # PEM encoded RSA private key used to identify host
+#    idle_connection_timeout_in_seconds: "(( inline ))"  # Idle timeout for incoming connections
 #    listen_addr: 0.0.0.0:2222  # address for the proxy to listen on
 #    log_level: info  # Log level
 #    uaa:
@@ -291,18 +302,27 @@
 #      port: "(( inline ))"  # The port to contact UAA on
 #      url: https://uaa.service.cf.internal  # The domain name of the UAA
 #    uaa_secret: "(( inline ))"  # The oauth client secret used to authenticate the ssh-proxy with the uaa
-#    uaa_token_url: "(( inline ))"  # URL of the UAA token endpoint
+#    uaa_token_url: "(( inline ))"  # URL of the UAA token endpoint. Deprecated in favor of diego.ssh_proxy.uaa.url.
 #  ssl:
 #    skip_cert_verify: false  # when connecting over https, ignore bad ssl certificates
 #dropsonde_port: 3457  # local metron agent's port
 #enable_consul_service_registration: true  # Enable the ssh-proxy to register itself as a service with Consul, for client discovery via Consul DNS. Do not disable without arranging alternate service discovery.
 #enable_container_proxy_tests: false  # When set, enables the container proxy tests in vizzini'
 #enable_declarative_healthcheck: false  # When set, enables the declarative check tests in vizzini'
+#internal_routes:
+#  enabled: false  # Enable the route-emitter to emit registrations for internal DNS-based service discovery.'
+#locks:
+#  consul:
+#    enabled: true  # Whether the route-emitter in global mode should attempt to claim its activity lock via the Consul API.
+#  locket:
+#    enabled: false  # Whether the route-emitter in global mode should attempt to claim its activity lock via the Locket API.
+#    hostname: locket.service.cf.internal  # Hostname at which to discover the Locket API server. The route-emitter will use its BBS client credentials to authenticate to the Locket API.
+#    port: 8891  # Port of the Locket API server.
 #loggregator:
 #  ca_cert: "(( inline ))"  # CA Cert used to communicate with local metron agent over gRPC
 #  cert: "(( inline ))"  # Cert used to communicate with local metron agent over gRPC
 #  key: "(( inline ))"  # Key used to communicate with local metron agent over gRPC
-#  use_v2_api: false  # True to use local metron agent gRPC v2 api. False, to use UDP v1 api
+#  use_v2_api: false  # True to use local metron agent gRPC v2 API. False to use UDP v1 API.
 #  v2_api_port: 3458  # Local metron agent gRPC port
 #register_direct_instance_routes: false  # Use the container IP address and internal port instead of the host IP address and external port when registering route endpoints. Suitable only for deployments in which the gorouters and TCP routers can route directly to the container IP of instances.
 #routing_api:
@@ -317,8 +337,11 @@
 #  enabled: false  # Enable the route-emitter in cell-local mode to emit TCP routes for instances to the Routing API.
 #tls:
 #  ca_cert: "(( inline ))"  # PEM-encoded tls client CA certificate for asset upload/download
+#  ca_certificate: "(( inline ))"  # PEM-encoded CA certificate used for client credentials.
 #  cert: "(( inline ))"  # PEM-encoded tls certificate that can be used for client and server authentication
+#  certificate: "(( inline ))"  # PEM-encoded certificate used for client credentials.
 #  key: "(( inline ))"  # PEM-encoded tls client key
+#  private_key: "(( inline ))"  # PEM-encoded key used for client credentials.
 #uaa:
 #  ca_cert: "(( inline ))"  # UAA ca certificate
 #  client_name: tcp_emitter  # UAA client id
